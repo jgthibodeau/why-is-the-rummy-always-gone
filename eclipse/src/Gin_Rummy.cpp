@@ -5,23 +5,6 @@
 // Description : Hello World in C++, Ansi-style
 //============================================================================
 
-//#include <iostream>
-//using namespace std;
-//
-//int main() {
-//	cout << "!!!Hello World!!!" << endl; // prints !!!Hello World!!!
-//	return 0;
-//}
-
-/* Title: Project 1 ECE373 Example driver artifact for Display class
- * Author: John Shield
- * Description: Demonstrates Unix Signal capturing and the Display class
- *		functionality.
- *
- * NOTES:
- *      * Requires the terminal (Putty) to be set to UTF-8.
- *      * Does not function when running a screen session.
- */
 #include "display.h"
 #include <signal.h>
 #include <ncurses.h>
@@ -30,29 +13,116 @@
 
 using namespace std;
 
-/* No Header file for this example driver artifact
- * function declaration here instead.
- */
+/* TODO Move function declarations to a header file */
+
 // Signal Subroutine for Window Resize
 static void detectResize (int sig);
 // stub artifact for what the game does when the screen resizes
 void stub_PrintResize(void);
+// moved set of sample commands
+void sampleDisplayActions(char key);
 
 // The gameDisplay object is global, because the static signal handler object
 // needs to access the dynamic object.
 display gameDisplay;
 
 /*
- * This is the main function that starts the driver artifact.
- * This function demonstrates some of the abilities of the Display class
- */
+* This is the main function that starts the driver artifact.
+*/
 int main(int argc, char* argv[])
 {
+	// vars
+	char key;
+	stringstream messageString;
+	//enumerable for game state
+	//players
+	//whose turn
+	//deck
+	//discard pile
+
+	// enable a interrupt triggered on a window resize
+	signal(SIGWINCH, detectResize); // enable the window resize signal
+
+	//initialize display
+		//draw start game button
+
+	// infinite loop for the main game, press ctrl-c to quit
+	for (;;) {
+		// calls the game display to get input
+    	key = gameDisplay.captureInput();
+
+    	//outside of game
+    		//draw "start game" button
+
+    		//if "start game" button pushed
+    			//prompt for name
+
+    		//if name entered
+    			//go to in-game
+
+		//inside of game
+    		//draw deck
+    		//draw discard cards
+    		//draw player cards
+
+    		//if player turn
+    			//if click 1st player card
+    				//highlight it
+    			//if click 2nd player card
+    				//swap with highlighted card
+
+    			//if in draw phase
+    				//if player clicks deck
+    					//give next deck card and go to discard phase
+    				//if player clicks discarded card
+    					//give that card and go to discard phase
+
+    			//if in discard phase
+					//draw knock button
+    				//if click knock button
+    					//go to knock phase
+    				//if click 1st player card
+    					//highlight it
+    				//if click discard card
+    					//discard highlighted card and go to next player
+
+    			//if knock phase
+    				//draw player cards
+    				//draw 3 slots for combos
+    				//draw other players played combos
+    				//draw "done" button
+    				//draw "cancel" button
+
+    				//if click 1st player card
+    					//highlight it
+    				//if click combo box
+    					//if highlighted card can be combo'd with this box
+    						//put it in this combo and remove from player cards
+    					//else
+    						//write "cards don't combo"
+    				//if click "done" button
+    					//if deadwood ok
+    						//go to next player in knock turn
+    					//else
+    						//write "too much deadwood"
+    				//if click "cancel" button
+    					//move cards from any combos to players cards
+    					//go to discard phase
+
+    		//if ai turn
+    			//execute ai code
+	}
+
+	return 0;
+}
+
+/*
+ * This function demonstrates some of the abilities of the Display class
+ */
+void sampleDisplayActions(char key){
 	// using a stringstream rather than a string to make making the banner easier
 	stringstream messageString;
 
-	// various variable declarations
-	char key;
 	int cardX = 0;
 	int cardY = 0;
 	int suit = 0;
@@ -61,74 +131,55 @@ int main(int argc, char* argv[])
 	int dragX = 0;
 	int dragY = 0;
 
-	// enable a interrupt triggered on a window resize
-	signal(SIGWINCH, detectResize); // enable the window resize signal
-
-/* You can uncomment and change the colors for various cards here*/
-//    init_pair(1, COLOR_CYAN, COLOR_BLACK); // for card outline
-//    init_pair(2, COLOR_BLUE, COLOR_BLACK); // for spades and clubs
-//    init_pair(3, COLOR_RED, COLOR_BLACK);  // for hearts and diamonds
-//    init_pair(4, COLOR_GREEN, COLOR_BLACK); // for turned over card
-//    init_pair(5, COLOR_GREEN, COLOR_BLACK); // for box drawing
-//    init_pair(6, COLOR_GREEN, COLOR_BLACK); // for banner display
-
-
-	// infinite loop for the main program, you can press ctrl-c to quit
-	for (;;) {
-		// calls the game display to capture some input
-    	key = gameDisplay.captureInput();
-		// if a mouse event occurred
-		if (key == -1) {
-			// make a banner message
-			messageString.str("");
-			messageString << "A mouse event occurred x=" \
-				<< gameDisplay.getMouseEventX() << ", y=" \
-				<< gameDisplay.getMouseEventY() << ", bstate=" \
-				<< gameDisplay.getMouseEventButton();
-			// display a banner message
-			gameDisplay.bannerTop(messageString.str());
-			// record the location of the mouse event
-			cardX = gameDisplay.getMouseEventX();
-			cardY = gameDisplay.getMouseEventY();
-			// Some of the mouse click values are defined in display.h
-			// check if it was a left click
-			if (gameDisplay.getMouseEventButton()&LEFT_CLICK) {
-				// draw a random card at the click location
-				suit = rand()%5;
-				number = rand()%15;
-				gameDisplay.displayCard(cardX,cardY,suit,number, A_BOLD);
-			// check if it was a right click
-			} else if (gameDisplay.getMouseEventButton()&RIGHT_CLICK) {
-				// erase a portion of the screen in the shape of a card
-				gameDisplay.eraseBox(cardX,cardY,6,5);
-			// check for the start of a drag click
-			} else if (gameDisplay.getMouseEventButton()&LEFT_DOWN) {
-				// record start of the drag
+	// if a mouse event occurred
+	if (key == -1) {
+		// make a banner message
+		messageString.str("");
+		messageString << "A mouse event occurred x=" \
+			<< gameDisplay.getMouseEventX() << ", y=" \
+			<< gameDisplay.getMouseEventY() << ", bstate=" \
+			<< gameDisplay.getMouseEventButton();
+		// display a banner message
+		gameDisplay.bannerTop(messageString.str());
+		// record the location of the mouse event
+		cardX = gameDisplay.getMouseEventX();
+		cardY = gameDisplay.getMouseEventY();
+		// Some of the mouse click values are defined in display.h
+		// check if it was a left click
+		if (gameDisplay.getMouseEventButton()&LEFT_CLICK) {
+			// draw a random card at the click location
+			suit = rand()%5;
+			number = rand()%15;
+			gameDisplay.displayCard(cardX,cardY,suit,number, A_BOLD);
+		// check if it was a right click
+		} else if (gameDisplay.getMouseEventButton()&RIGHT_CLICK) {
+			// erase a portion of the screen in the shape of a card
+			gameDisplay.eraseBox(cardX,cardY,6,5);
+		// check for the start of a drag click
+		} else if (gameDisplay.getMouseEventButton()&LEFT_DOWN) {
+			// record start of the drag
+			dragX = cardX;
+			dragY = cardY;
+		// when the mouse is released
+		} else if (gameDisplay.getMouseEventButton()&LEFT_UP) {
+			// calculate size of the drag
+			int sizeX = abs(dragX-cardX);
+			int sizeY = abs(dragY-cardY);
+			// get to the top left corner of the drag area
+			if (dragX > cardX)
 				dragX = cardX;
+			if (dragY > cardY)
 				dragY = cardY;
-			// when the mouse is released
-			} else if (gameDisplay.getMouseEventButton()&LEFT_UP) {
-				// calculate size of the drag
-				int sizeX = abs(dragX-cardX);
-				int sizeY = abs(dragY-cardY);
-				// get to the top left corner of the drag area
-				if (dragX > cardX)
-					dragX = cardX;
-                if (dragY > cardY)
-                    dragY = cardY;
-				// draw a box around the drag area
-				gameDisplay.drawBox(dragX, dragY, sizeX, sizeY, 0);
-			}
-		// if a key was pressed
-		} else if(key > 0) {
-			// make bottom a banner message saying that a key was pressed
-			messageString.str("");
-			messageString << "Key " << key << " pressed";
-			gameDisplay.bannerBottom(messageString.str());
+			// draw a box around the drag area
+			gameDisplay.drawBox(dragX, dragY, sizeX, sizeY, 0);
 		}
+	// if a key was pressed
+	} else if(key > 0) {
+		// make bottom a banner message saying that a key was pressed
+		messageString.str("");
+		messageString << "Key " << key << " pressed";
+		gameDisplay.bannerBottom(messageString.str());
 	}
-
-	return 0;
 }
 
 /*
