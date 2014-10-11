@@ -209,21 +209,28 @@ void display::printFace(int suit, int number, int line, int printAtt) {
         if (line==1)
             printw("oker");
         if (line==2)
-            printw("  J%s", joker);
+            printw(" J%s ", joker);
 	// this is the display for the cards with suits and numbers
 	} else if (suit>=1 && suit <=4 && number>=1 && number<=13) {
 		if (line==0) {
 			printSuit(suit); // function to draw suit
-			printNumber(number); // function to draw number
-			if (number!=10)
+			//printNumber(number); // function to draw number
+			//if (number!=10)
+			//	printw(" ");
+			printw("   ");
+		} else if (line==1) {
+			printw(" ");
+			printNumber(number);
+			if(number != 10)
 				printw(" ");
-			printw(" ");	
+			printw(" ");
 		} else if (line==2) {
-			if (number!=10)
-                printw(" ");
-            printw(" ");
-			printNumber(number); // function to draw number
+			//if (number!=10)
+            //    printw(" ");
+            printw("  ");
+//			printNumber(number); // function to draw number
 			printSuit(suit);	// function to draw suit
+			printw(" ");
 		} else {
 			printw("    ");
 		}
@@ -232,11 +239,11 @@ void display::printFace(int suit, int number, int line, int printAtt) {
 		// the face down cards have a special color
 		attron(COLOR_PAIR(4) | printAtt);
 		if (line==0)
-			printw("%s  %s", spades, hearts);
+			printw("%s %s ", spades, hearts);
 		if (line==1)
             printw("Play");
 		if (line==2)
-			printw("%s  %s", diamonds, clubs);
+			printw("%s %s ", diamonds, clubs);
 		attroff(COLOR_PAIR(1) | printAtt);
 	}
 
