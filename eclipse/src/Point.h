@@ -12,6 +12,9 @@ public:
 	double x() { return xval; }
 	double y() { return yval; }
 
+	// set point
+	void setPoint(double x, double y){ xval=x;yval=y; }
+
 	// Distance to another point
 	double dist(Point other);
 
