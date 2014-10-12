@@ -4,7 +4,7 @@ CC=g++
 DEBUG=
 CFLAGS=-c $(DEBUG)
 LDFLAGS=-lncursesw $(DEBUG)
-SOURCES=display.cpp Gin_Rummy.cpp
+SOURCES=display.cpp Gin_Rummy.cpp Key.cpp CardSlot.cpp Point.cpp
 OBJECTS=$(SOURCES:.cpp=.o)
 EXECUTABLE=Gin_Rummy
 

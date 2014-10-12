@@ -6,6 +6,9 @@
 //============================================================================
 
 #include "display.h"
+#include "Key.h"
+#include "Point.h"
+#include "CardSlot.h"
 #include <signal.h>
 #include <ncurses.h>
 #include <math.h>
@@ -24,107 +27,21 @@ void stub_PrintResize(void);
 void setTopBanner(string s);
 // sets the text of the displays bottomBanner
 void setBottomBanner(string s);
+//draw cards and other things
+void drawCards();
 // moved set of sample commands
 void sampleDisplay(char key);
 
 // The gameDisplay object is global, because the static signal handler object
 // needs to access the dynamic object.
 display gameDisplay;
-
-/* Point class */
-class Point {
-private:
-	double xval, yval;
-public:
-	// Constructor uses default arguments to allow calling with zero, one,
-	// or two values.
-	Point(double x = 0.0, double y = 0.0) {
-		xval = x;
-		yval = y;
-	}
-
-	// Extractors.
-	double x() { return xval; }
-	double y() { return yval; }
-
-	// Distance to another point.  Pythagorean thm.
-	double dist(Point other) {
-		double xd = xval - other.xval;
-		double yd = yval - other.yval;
-		return sqrt(xd*xd + yd*yd);
-	}
-
-	// Add or subtract two points.
-	Point add(Point b){
-		return Point(xval + b.xval, yval + b.yval);
-	}
-	Point sub(Point b){
-		return Point(xval - b.xval, yval - b.yval);
-	}
-
-	// Move the existing point.
-	void move(double a, double b){
-		xval += a;
-		yval += b;
-	}
-};
-
-/* CardSlot class */
-class CardSlot {
-private:
-	Point positionPoint;
-	int widthVal;
-	int heightVal;
-	//Card card;
-public:
-	// Constructor uses default arguments to allow calling with zero, one,
-	// or two values.
-	CardSlot(double x = 0.0, double y = 0.0, int width = 0, int height = 0) {
-		positionPoint.move(x,y);
-		widthVal = width;
-		heightVal = height;
-	}
-
-	// Extractors.
-	Point position() { return positionPoint; }
-	double width() { return widthVal; }
-	double height() { return heightVal; }
-
-	// Move the existing button.
-	void move(double a, double b){
-		positionPoint.move(a,b);
-	}
-
-	//set card
-	//remove card
-};
-
-/* Key class */
-class Key {
-private:
-	char keyVal;
-	string textVal;
-public:
-	// Constructor uses default arguments to allow calling with zero, one,
-	// or two values.
-	Key(char k = ' ', string text = "") {
-		keyVal = k;
-		textVal = text;
-	}
-
-	// Extractors.
-	char key() { return keyVal; }
-	string text() { return textVal; }
-	string toString() { return textVal+": "+keyVal; }
-
-	// Setters
-	void setKey(char c){
-		keyVal = c;
-	}
-	void setText(string s){
-		textVal = s;
-	}
-};
+CardSlot deckSlot(0,1,0,0);
+CardSlot discardSlots[32];	//can never be more than 32 cards in discard pile
+CardSlot playerSlots[10];	//can never be more than 10 cards in players hand
+CardSlot comboSlots[6];	//each player can only have 3 combos
+static const int OUT_GAME = 0;
+static const int IN_GAME = 1;
+static const int ENTER_NAME = 2;
 
 /*
 * This is the main function that starts the driver artifact.
@@ -134,9 +51,6 @@ int main(int argc, char* argv[])
 	// client vars
 	char key;
 	//enumerable for game state
-	int OUT_GAME = 0;
-	int IN_GAME = 1;
-	int ENTER_NAME = 2;
 	int GAME_STATE = OUT_GAME;
 	string playerName="";
 
@@ -158,10 +72,14 @@ int main(int argc, char* argv[])
 	string knockMessage = submitKey.toString()+"\t"+cancelKey.toString()+"\t"+quitKey.toString();
 	string notTurnMessage = quitKey.toString();
 	string nameMessage = "Enter your name: ";
-	CardSlot deckSlot(0,0,0,0);
-	//discard slots
-	//player card slots
-	//combo slots
+	//initialize card slot positions
+	for(int i=0;i<32;i++){
+		discardSlots[i].move(8+8*(i%10),1+5*(i/10));
+	}
+	for(int i=0;i<10;i++){
+		playerSlots[i].move(8*(i+1),25);
+	}
+	//TODO preformat combo slots
 
 	// enable a interrupt triggered on a window resize
 	signal(SIGWINCH, detectResize); // enable the window resize signal
@@ -174,103 +92,106 @@ int main(int argc, char* argv[])
 		// calls the game display to get input
     	key = gameDisplay.captureInput();
 
+    	//if quitKey pressed
+    	if(key == quitKey.key())
+    		std::exit(0);
+
     	//erase the canvas
 		gameDisplay.eraseBox(0,0,100000,1000000);
+		gameDisplay.fillBackground();
 
-		//x, y, width, height, formatting
-    	//gameDisplay.drawBox(60, 10, 20, 20, 0);
-		//x, y, suit, num, formatting
-		//gameDisplay.displayCard(60, 10, 1, 1, 0);
-		int x = rand()%100;
-		int y = rand()%20;
-		int suit = rand()%5;
-		int number = rand()%15;
-		gameDisplay.displayCard(x, y, suit, number, A_BOLD);
+		switch(GAME_STATE){
+		case OUT_GAME:
+			//write startMessage
+			setTopBanner(startMessage);
 
-    	//outside of game
-		if(GAME_STATE == OUT_GAME){
-    		//write startMessage
-    		setTopBanner(startMessage);
-
-    		//if startKey pushed
-    		if(key == startKey.key()){
-    			//prompt for name
-    			setBottomBanner(nameMessage);
-    			//go to ENTER_NAME state
-    			GAME_STATE = ENTER_NAME;
-    		}
-
-
-		}
-		else if(GAME_STATE == ENTER_NAME){
-			//if enter key pressed
-			if(key == '\n')
-				//go to in-game
-				GAME_STATE = IN_GAME;
-			//use key as next name letter
-			else if(key > 0){
-				playerName = playerName + key;
+			//if startKey pushed
+			if(key == startKey.key()){
+				//prompt for name
+				setBottomBanner(nameMessage);
+				//go to ENTER_NAME state
+				GAME_STATE = ENTER_NAME;
 			}
-
+			break;
+		case ENTER_NAME:
+			//write startMessage
+			setTopBanner(startMessage);
 			//prompt for name
 			setBottomBanner(nameMessage+playerName);
-		}
-		//inside of game
-		else if(GAME_STATE == IN_GAME){
-    		//draw deck
-    		//draw discard cards
-    		//draw player cards
 
-    		//if player turn
-    			//if click 1st player card
-    				//highlight it
-    			//if click 2nd player card
-    				//swap with highlighted card
+			//if enter key pressed
+			if(key == '\n')
+				GAME_STATE = IN_GAME;
+			//if delete key pressed
+			else if((key == 7 || key == 74) && playerName.size() > 0)
+				playerName.erase (playerName.end() - 1);
+			//use key as next name letter
+			else if(isalnum(key))//key > 31 && key < 127)
+				playerName = playerName + key;
+			break;
+		case IN_GAME:
+			//x, y, width, height, formatting
+	    	//gameDisplay.drawBox(60, 10, 20, 20, 0);
+			//x, y, suit, num, formatting
+			//gameDisplay.displayCard(60, 10, 1, 1, 0);
 
-    			//if in draw phase
-    				//write drawMessage
-    				//if player clicks deck
-    					//give next deck card and go to discard phase
-    				//if player clicks discarded card
-    					//give that card and go to discard phase
+			drawCards();
 
-    			//if in discard phase
+			//if player turn
+				//if click 1st player card
+					//highlight it
+				//if click 2nd player card
+					//swap with highlighted card
+
+				//if in draw phase
+					//write drawMessage
+					setTopBanner(drawMessage);
+					//if player clicks deck
+						//give next deck card and go to discard phase
+					//if player clicks discarded card
+						//give that card and go to discard phase
+
+				//if in discard phase
 					//write discardMessage
-    				//if knockKey pressed
-    					//go to knock phase
-    				//if click 1st player card
-    					//highlight it
-    				//if click discard card
-    					//discard highlighted card and go to next player
+					setTopBanner(discardMessage);
+					//if knockKey pressed
+						//go to knock phase
+					//if click 1st player card
+						//highlight it
+					//if click discard card
+						//discard highlighted card and go to next player
 
-    			//if knock phase
-    				//draw player cards
-    				//draw 3 slots for combos
-    				//draw other players played combos
-    				//write knockMessage
+				//if knock phase
+					//draw player cards
+					//draw 3 slots for combos
+					//draw other players played combos
+					//write knockMessage
+					setTopBanner(knockMessage);
 
-    				//if click 1st player card
-    					//highlight it
-    				//if click combo box
-    					//if highlighted card can be combo'd with this box
-    						//put it in this combo and remove from player cards
-    					//else
-    						//write "cards don't combo"
-    				//if doneKey pressed
-    					//if deadwood ok
-    						//go to next player in knock turn
-    					//else
-    						//write "too much deadwood"
-    				//if cancelKey pressed
-    					//move cards from any combos to players cards
-    					//go to discard phase
+					//if click 1st player card
+						//highlight it
+					//if click combo box
+						//if highlighted card can be combo'd with this box
+							//put it in this combo and remove from player cards
+						//else
+							//write "cards don't combo"
+					//if doneKey pressed
+						//if deadwood ok
+							//go to next player in knock turn
+						//else
+							//write "too much deadwood"
+					//if cancelKey pressed
+						//move cards from any combos to players cards
+						//go to discard phase
 
-    		//if ai turn
-    			//write notTurnMessage
-    			//execute ai code
+			//if ai turn
+				//write notTurnMessage
+				//execute ai code
+			break;
 		}
+
     	//draw small box in a corner to get rid of the annoying cursor
-		gameDisplay.drawBox(0,1,1,1,0);
+		//gameDisplay.drawBox(0,1,1,1,0);
 	}
 
 	return 0;
@@ -340,6 +261,27 @@ void sampleDisplay(char key){
 		messageString << "Key " << key << " pressed";
 		gameDisplay.bannerBottom(messageString.str());
 	}
+}
+
+void drawCards(){
+	//draw deck
+	gameDisplay.displayCard(deckSlot.position().x(),deckSlot.position().y(),0,0,0);
+	//draw player cards
+	gameDisplay.drawBox(7,24,80,7,0);
+	for(int i=0;i<10;i++){
+		//if card exists
+		gameDisplay.displayCard(playerSlots[i].position().x(),playerSlots[i].position().y(),2,2,0);
+		//else stop drawing
+	}
+	//if in knock phase
+		//draw combos
+	//else
+		//draw discard cards
+		for(int i=0;i<32;i++){
+			//if card exists
+			gameDisplay.displayCard(discardSlots[i].position().x(),discardSlots[i].position().y(),1,1,0);
+			//else stop drawing
+		}
 }
 
 void setTopBanner(string s){

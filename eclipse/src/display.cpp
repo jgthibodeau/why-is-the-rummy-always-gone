@@ -54,12 +54,13 @@ display::display(void) {
 	lineBoundaryOffset = 1;
 
 	// Settings for card colors (these can be set outside of the display class)
-	init_pair(1, COLOR_CYAN, COLOR_BLACK); // for card outline
-	init_pair(2, COLOR_BLUE, COLOR_BLACK); // for spades and clubs
-	init_pair(3, COLOR_RED, COLOR_BLACK);  // for hearts and diamonds
-	init_pair(4, COLOR_GREEN, COLOR_BLACK); // for turned over card
-	init_pair(5, COLOR_GREEN, COLOR_BLACK); // for box drawing
+	init_pair(1, COLOR_BLACK, COLOR_WHITE); // for card outline
+	init_pair(2, COLOR_BLUE, COLOR_WHITE); // for spades and clubs
+	init_pair(3, COLOR_RED, COLOR_WHITE);  // for hearts and diamonds
+	init_pair(4, COLOR_GREEN, COLOR_WHITE); // for turned over card
+	init_pair(5, COLOR_GREEN, COLOR_WHITE); // for box drawing
 	init_pair(6, COLOR_GREEN, COLOR_BLACK); // for banner display
+	init_pair(7, COLOR_BLACK, COLOR_WHITE);	// for background
 }
 
 /* Function: This is the destructor.
@@ -461,3 +462,13 @@ void display::bannerTop(string bannerText) {
 	attroff(COLOR_PAIR(6) | A_REVERSE | A_BOLD);
 }
 
+void display::fillBackground() {
+	// change to the banner draw settings
+	attron(COLOR_PAIR(7));
+	for(int i=0;i<lines;i++){
+		move(i,0);
+		hline(' ', cols);
+	}
+	attroff(COLOR_PAIR(7));
+	//move(lines-1,cols-1);
+}

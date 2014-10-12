@@ -70,6 +70,8 @@ public:
 	void bannerBottom(string bannerText);
 	// display banner text at the top of the screen
 	void bannerTop(string bannerText);
+	// fill in the background
+	void fillBackground();
 
 	// get information about the display
 	int getCols(void) {return cols;}
