@@ -10,7 +10,7 @@ void CardSlot::move(double a, double b){
 	positionPoint.move(a,b);
 }
 
-int CardSlot::deck = 0;
-int CardSlot::discard = 1;
-int CardSlot::player = 2;
-int CardSlot::combo = 3;
+int CardSlot::deck = deck;
+int CardSlot::discard = discard;
+int CardSlot::player = player;
+int CardSlot::combo = combo;

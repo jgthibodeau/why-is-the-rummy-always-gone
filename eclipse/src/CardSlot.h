@@ -4,12 +4,6 @@
 
 class CardSlot {
 
-	//types of slots
-	static int deck;
-	static int discard;
-	static int player;
-	static int combo;
-
 private:
 	Point positionPoint;
 	int widthVal;
@@ -18,7 +12,13 @@ private:
 	int typeVal;
 	//Card card;
 public:
-	CardSlot() : positionPoint(0,0){widthVal=0; heightVal=0; highlight=false; typeVal=0};
+	//types of slots
+	static int deck;
+	static int discard;
+	static int player;
+	static int combo;
+
+	CardSlot() : positionPoint(0,0){widthVal=0; heightVal=0; highlight=false; typeVal=0;};
 	CardSlot(double x, double y, int width, int height, int type);
 
 	// Extractors
@@ -26,7 +26,7 @@ public:
 	double width() { return widthVal; }
 	double height() { return heightVal; }
 	bool highlighted() { return highlight; }
-	int type() { return type; }
+	int type() { return typeVal; }
 
 	// set bounds
 	void setBounds(int x, int y, int width, int height){ positionPoint.setPoint(x,y); widthVal=width;heightVal=height; }

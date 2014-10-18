@@ -76,14 +76,14 @@ void sampleDisplay(char key);
 int main(int argc, char* argv[])
 {
 	int numCols = (gameDisplay.getCols()-2)/8;
-	cardSlots[0] = CardSlot(2,2,0,0);		//1 deck
-	cardSlots[1] = CardSlot(9,2,0,0);	//1 discard pile
+	cardSlots[0] = CardSlot(2,2,0,0,CardSlot::deck);		//1 deck
+	cardSlots[1] = CardSlot(9,2,0,0,CardSlot::discard);	//1 discard pile
 	for(int i=2;i<12;i++){
-		cardSlots[i] = CardSlot(2+8*(i%numCols),10+(10*(int)(i/numCols)), 6, 5);
+		cardSlots[i] = CardSlot(2+8*(i%numCols),10+(10*(int)(i/numCols)), 6, 5, CardSlot::player);	//10 player cards
 	}
 	//TODO preformat combo slots
 	for(int i=12;i<18;i++){
-		cardSlots[i] = CardSlot(9+8*(i%10),1+5*(i/10), 6, 5);
+		cardSlots[i] = CardSlot(9+8*(i%10),1+5*(i/10), 6, 5, CardSlot::combo);
 	}
 
 	// enable a interrupt triggered on a window resize
@@ -239,8 +239,8 @@ void drawCards(){
 					gameDisplay.drawBox(cardSlots[i].position().x()-1, cardSlots[i].position().y()-1,
 							cardSlots[i].width()+2,cardSlots[i].height()+2,0);
 				//draw card
-				if(cardSlots[i].type == CardSlot::deck);
-				gameDisplay.displayCard(cardSlots[i].position().x(),cardSlots[i].position().y(),2,2,0);
+				if(cardSlots[i].type() == CardSlot::deck)
+					gameDisplay.displayCard(cardSlots[i].position().x(),cardSlots[i].position().y(),2,2,0);
 	}
 	//if in knock phase
 		//draw combos
