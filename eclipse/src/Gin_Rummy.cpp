@@ -35,26 +35,21 @@ string playerName="";
 
 //display vars
 display gameDisplay;
-CardSlot deckSlot(0,1,0,0);
-CardSlot discardSlots[32];	//can never be more than 32 cards in discard pile
-CardSlot playerSlots[10];	//can never be more than 10 cards in players hand
-CardSlot comboSlots[6];	//each player can only have 3 combos
+//input keys
 Key startKey('n', "New Game");
 Key knockKey('k', "Knock");
 Key submitKey('s', "Submit");
 Key cancelKey('c', "Cancel");
 Key quitKey('q', "Quit");
-string startMessage = startKey.toString()+"\t"+quitKey.toString();
-string drawMessage = quitKey.toString();
-string discardMessage = knockKey.toString()+"\t"+quitKey.toString();
-string knockMessage = submitKey.toString()+"\t"+cancelKey.toString()+"\t"+quitKey.toString();
-string notTurnMessage = quitKey.toString();
+//positions to display cards
+CardSlot cardSlots[18];		//1 deck, 1 discard pile, 6 combo piles, 10 player cards
+//banner messages to display controls and info
+string startMessage = "Gin Rummy - "+startKey.toString()+"\t"+quitKey.toString();
+string drawMessage = "Gin Rummy - Your Turn - Draw - "+quitKey.toString();
+string discardMessage = "Gin Rummy - Your Turn - "+knockKey.toString()+"\t"+quitKey.toString();
+string knockMessage = "Gin Rummy - Your Turn - Knock - "+submitKey.toString()+"\t"+cancelKey.toString()+"\t"+quitKey.toString();
+string notTurnMessage = "Gin Rummy - Opponent's Turn - "+quitKey.toString();
 string nameMessage = "Enter your name: ";
-
-//temp testing vars
-int PLAYERCARDS=10;
-int DISCARDCARDS=32;
-int COMBOS=6;
 
 // Signal Subroutine for Window Resize
 static void detectResize (int sig);
@@ -80,14 +75,16 @@ void sampleDisplay(char key);
 */
 int main(int argc, char* argv[])
 {
-	//initialize card slot positions
-	for(int i=0;i<DISCARDCARDS;i++){
-		discardSlots[i].setBounds(8+8*(i%10),1+5*(i/10), 6, 5);
-	}
-	for(int i=0;i<PLAYERCARDS;i++){
-		playerSlots[i].setBounds(8*(i+1),25, 6, 5);
+	int numCols = (gameDisplay.getCols()-2)/8;
+	cardSlots[0] = CardSlot(2,2,0,0);		//1 deck
+	cardSlots[1] = CardSlot(9,2,0,0);	//1 discard pile
+	for(int i=2;i<12;i++){
+		cardSlots[i] = CardSlot(2+8*(i%numCols),10+(10*(int)(i/numCols)), 6, 5);
 	}
 	//TODO preformat combo slots
+	for(int i=12;i<18;i++){
+		cardSlots[i] = CardSlot(9+8*(i%10),1+5*(i/10), 6, 5);
+	}
 
 	// enable a interrupt triggered on a window resize
 	signal(SIGWINCH, detectResize); // enable the window resize signal
@@ -129,7 +126,9 @@ void gameLoop(){
 			playerName = playerName + key;
 		break;
 	case IN_GAME:
+		//if mouseClick
 		if(key == -1){
+			//get card clicked if any
 			findCardSlot(gameDisplay.getMouseEventX(), gameDisplay.getMouseEventY());
 		}
 		//if player turn
@@ -201,9 +200,6 @@ void draw(){
 		break;
 	case IN_GAME:
 		//if player turn
-			//if click 1st player card
-				//highlight it
-
 			//if in draw phase
 				//write drawMessage
 				setTopBanner(drawMessage);
@@ -211,27 +207,20 @@ void draw(){
 			//if in discard phase
 				//write discardMessage
 				setTopBanner(discardMessage);
-				//if click 1st player card
-					//highlight it
 
 			//if knock phase
 				//write knockMessage
 				setTopBanner(knockMessage);
-
-				//if click 1st player card
-					//highlight it
 				//if click combo box
-					//if highlighted card can be combo'd with this box
-					//else
+					//if highlighted card can't be combo'd with this box
 						//write "cards don't combo"
 				//if doneKey pressed
-					//if deadwood ok
-						//go to next player in knock turn
-					//else
+					//if deadwood not ok
 						//write "too much deadwood"
 
 		//if ai turn
 			//write notTurnMessage
+			setTopBanner(notTurnMessage);
 
 		drawCards();
 		break;
@@ -239,53 +228,44 @@ void draw(){
 }
 
 void drawCards(){
-	//draw deck
-	gameDisplay.displayCard(deckSlot.position().x(),deckSlot.position().y(),0,0,0);
-	//draw player cards
-	//gameDisplay.drawBox(7,24,80,7,0);
-	for(int i=0;i<PLAYERCARDS;i++){
+	//draw all cards/slots
+	for(int i=0;i<18;i++){
 		//if card exists
-			//draw highlight
-			if(playerSlots[i].highlighted())
-				gameDisplay.drawBox(playerSlots[i].position().x()-1, playerSlots[i].position().y()-1,
-						playerSlots[i].width()+2,playerSlots[i].height()+2,0);
-			//draw card
-			gameDisplay.displayCard(playerSlots[i].position().x(),playerSlots[i].position().y(),2,2,0);
-		//else stop drawing
+			//if card is deck, draw it
+			//if knock phase and card is combo, draw it
+			//if not knock phase and card is discard, draw it
+				//draw highlight
+				if(cardSlots[i].highlighted())
+					gameDisplay.drawBox(cardSlots[i].position().x()-1, cardSlots[i].position().y()-1,
+							cardSlots[i].width()+2,cardSlots[i].height()+2,0);
+				//draw card
+				if(cardSlots[i].type == CardSlot::deck);
+				gameDisplay.displayCard(cardSlots[i].position().x(),cardSlots[i].position().y(),2,2,0);
 	}
 	//if in knock phase
 		//draw combos
 	//else
 		//draw discard cards
-		for(int i=0;i<DISCARDCARDS;i++){
+		//for(int i=0;i<DISCARDCARDS;i++){
 			//if card exists
-			gameDisplay.displayCard(discardSlots[i].position().x(),discardSlots[i].position().y(),1,1,0);
+			//gameDisplay.displayCard(discardSlot.position().x(),discardSlot.position().y(),1,1,0);
 			//else stop drawing
-		}
+		//}
 }
 
 CardSlot *findCardSlot(int x, int y){
-	//iterate over player cards
+	//iterate over card slots
 	int minX,minY,maxX,maxY;
-	for(int i=0;i<PLAYERCARDS;i++){
-		minX=playerSlots[i].position().x();
-		maxX=minX+playerSlots[i].width();
-		minY=playerSlots[i].position().y();
-		maxY=minY+playerSlots[i].height();
+	for(int i=0;i<18;i++){
+		minX=cardSlots[i].position().x();
+		maxX=minX+cardSlots[i].width();
+		minY=cardSlots[i].position().y();
+		maxY=minY+cardSlots[i].height();
+		//set highlighted
 		if(x>=minX && x<=maxX && y>=minY && y<=maxY){
-			playerSlots[i].setHighlight(!playerSlots[i].highlighted());
+			cardSlots[i].setHighlight(!cardSlots[i].highlighted());
 		}
 	}
-	//if in draw phase
-		//iterate over discard pile and deck
-		for(int i=0;i<DISCARDCARDS;i++){
-
-		}
-	//if in knock phase
-		//iterate over combos
-		for(int i=0;i<COMBOS;i++){
-
-		}
 	return NULL;
 }
 
@@ -312,7 +292,7 @@ void detectResize(int sig) {
 	// re-enable the interrupt for a window resize
     signal(SIGWINCH, detectResize);
 	/*INSERT YOUR OWN SCREEN UPDATE CODE instead of stub_PrintResize*/
-	stub_PrintResize();
+
 }
 
 /*
