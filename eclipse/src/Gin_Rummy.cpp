@@ -42,7 +42,8 @@ Key submitKey('s', "Submit");
 Key cancelKey('c', "Cancel");
 Key quitKey('q', "Quit");
 //positions to display cards
-CardSlot cardSlots[18];		//1 deck, 1 discard pile, 6 combo piles, 10 player cards
+const int NUMBERCARDSLOTS = 18;
+CardSlot cardSlots[NUMBERCARDSLOTS];		//1 deck, 1 discard pile, 6 combo piles, 10 player cards
 //banner messages to display controls and info
 string startMessage = "Gin Rummy - "+startKey.toString()+"\t"+quitKey.toString();
 string drawMessage = "Gin Rummy - Your Turn - Draw - "+quitKey.toString();
@@ -77,13 +78,12 @@ int main(int argc, char* argv[])
 {
 	int numCols = (gameDisplay.getCols()-2)/8;
 	cardSlots[0] = CardSlot(2,2,0,0,CardSlot::deck);		//1 deck
-	cardSlots[1] = CardSlot(9,2,0,0,CardSlot::discard);	//1 discard pile
-	for(int i=2;i<12;i++){
-		cardSlots[i] = CardSlot(2+8*(i%numCols),10+(10*(int)(i/numCols)), 6, 5, CardSlot::player);	//10 player cards
+	cardSlots[1] = CardSlot(10,2,0,0,CardSlot::discard);		//1 discard pile
+	for(int i=0;i<10;i++){
+		cardSlots[i+2] = CardSlot(2+8*(i%numCols),12+(10*(int)(i/numCols)), 6, 5, CardSlot::player);	//10 player cards
 	}
-	//TODO preformat combo slots
-	for(int i=12;i<18;i++){
-		cardSlots[i] = CardSlot(9+8*(i%10),1+5*(i/10), 6, 5, CardSlot::combo);
+	for(int i=0;i<6;i++){
+		cardSlots[i+12] = CardSlot(2+8*(i%10),7+5*(i/10), 6, 5, CardSlot::combo);
 	}
 
 	// enable a interrupt triggered on a window resize
@@ -200,15 +200,19 @@ void draw(){
 		break;
 	case IN_GAME:
 		//if player turn
+		//switch(curPlayer.phase){
 			//if in draw phase
+			//case(Player::draw):
 				//write drawMessage
 				setTopBanner(drawMessage);
 
 			//if in discard phase
+			//case(Player::discard):
 				//write discardMessage
 				setTopBanner(discardMessage);
 
 			//if knock phase
+			//case(Player::knock):
 				//write knockMessage
 				setTopBanner(knockMessage);
 				//if click combo box
@@ -229,28 +233,30 @@ void draw(){
 
 void drawCards(){
 	//draw all cards/slots
-	for(int i=0;i<18;i++){
-		//if card exists
-			//if card is deck, draw it
-			//if knock phase and card is combo, draw it
-			//if not knock phase and card is discard, draw it
-				//draw highlight
-				if(cardSlots[i].highlighted())
-					gameDisplay.drawBox(cardSlots[i].position().x()-1, cardSlots[i].position().y()-1,
-							cardSlots[i].width()+2,cardSlots[i].height()+2,0);
-				//draw card
-				if(cardSlots[i].type() == CardSlot::deck)
-					gameDisplay.displayCard(cardSlots[i].position().x(),cardSlots[i].position().y(),2,2,0);
+	for(int i=0;i<NUMBERCARDSLOTS;i++){
+		//draw highlight
+		if(cardSlots[i].highlighted())
+			gameDisplay.drawBox(cardSlots[i].position().x()-1, cardSlots[i].position().y()-1,
+					cardSlots[i].width()+2,cardSlots[i].height()+2,0);
+
+		//draw cards
+		switch (cardSlots[i].type()){
+		case (CardSlot::deck):
+				gameDisplay.displayCard(cardSlots[i].position().x(),cardSlots[i].position().y(),0,0,0);
+				break;
+		case (CardSlot::discard):
+				//if not knock phase
+				gameDisplay.displayCard(cardSlots[i].position().x(),cardSlots[i].position().y(),1,1,0);
+				break;
+		case (CardSlot::player):
+				gameDisplay.displayCard(cardSlots[i].position().x(),cardSlots[i].position().y(),2,2,0);
+				break;
+		case (CardSlot::combo):
+				//if knock phase
+				gameDisplay.displayCard(cardSlots[i].position().x(),cardSlots[i].position().y(),3,3,0);
+				break;
+		}
 	}
-	//if in knock phase
-		//draw combos
-	//else
-		//draw discard cards
-		//for(int i=0;i<DISCARDCARDS;i++){
-			//if card exists
-			//gameDisplay.displayCard(discardSlot.position().x(),discardSlot.position().y(),1,1,0);
-			//else stop drawing
-		//}
 }
 
 CardSlot *findCardSlot(int x, int y){

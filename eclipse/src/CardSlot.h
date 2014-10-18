@@ -13,10 +13,10 @@ private:
 	//Card card;
 public:
 	//types of slots
-	static int deck;
-	static int discard;
-	static int player;
-	static int combo;
+	static const int deck = 0;
+	static const int discard = 1;
+	static const int player = 2;
+	static const int combo = 3;
 
 	CardSlot() : positionPoint(0,0){widthVal=0; heightVal=0; highlight=false; typeVal=0;};
 	CardSlot(double x, double y, int width, int height, int type);
