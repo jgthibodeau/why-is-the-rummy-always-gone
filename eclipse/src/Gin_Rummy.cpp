@@ -44,7 +44,7 @@ Key submitKey('s', "Submit");
 Key cancelKey('c', "Cancel");
 Key quitKey('q', "Quit");
 //positions to display cards
-const int NUMBERCARDSLOTS = 18;
+const int NUMBERCARDSLOTS = 19;
 CardSlot cardSlots[NUMBERCARDSLOTS];	//1 deck, 1 discard pile, 6 combo piles, 10 player cards
 CardSlot *selectedSlots[2];				//used for selecting specific cards
 //banner messages to display controls and info
@@ -74,8 +74,6 @@ void drawBanners();
 CardSlot *findCardSlot(int x, int y);
 //reset highlights and selected cards
 void resetSelectedSlots();
-// moved set of sample commands
-void sampleDisplay(char key);
 
 //new Card(rand()%4+1,rand()%13+1,0)
 
@@ -88,17 +86,17 @@ int main(int argc, char* argv[])
 	int numCols = (gameDisplay.getCols()-2)/8;
 	cardSlots[0] = CardSlot(2,2,0,0,CardSlot::deck);		//1 deck
 	cardSlots[1] = CardSlot(10,2,0,0,CardSlot::discard);	//1 discard pile
-	for(int i=0;i<10;i++){													//10 player cards
+	for(int i=0;i<11;i++){									//11 player cards
 		cardSlots[i+2] = CardSlot(2+8*(i%numCols),12+(10*(int)(i/numCols)), 6, 5, CardSlot::player, i);
 	}
-	for(int i=0;i<6;i++){													//6 combo cards
-		cardSlots[i+12] = CardSlot(2+8*(i%10),7+5*(i/10), 6, 5, CardSlot::combo, i);
+	for(int i=0;i<6;i++){									//6 combo cards
+		cardSlots[i+13] = CardSlot(2+8*(i%10),7+5*(i/10), 6, 5, CardSlot::combo, i);
 	}
 
 	// enable a interrupt triggered on a window resize
 	signal(SIGWINCH, detectResize); // enable the window resize signal
 
-	// infinite loop for the main game, press ctrl-c to quit
+	// infinite loop for the main game
 	for (;;) {
 		gameLoop();
 		draw();
@@ -289,6 +287,7 @@ void gameLoop(){
 					if(key == cancelKey.key()){
 						//TODO remove cards from any combos to curPlayers cards
 					}
+			//TODO end case
 
 		//if ai turn
 		//if(curPlayer == player2){
@@ -320,11 +319,11 @@ void drawCards(){
 
 		//draw cards
 		CardSlot slot = cardSlots[i];
-		Card card;
+		Card* card = NULL;
 		bool display = true;
 		switch (slot.type()){
 		case (CardSlot::deck):
-			card = cardBack;
+			card = &cardBack;
 			break;
 		case (CardSlot::discard):
 			//TODO card = discardPile.last
@@ -338,8 +337,12 @@ void drawCards(){
 			//TODO card = combos[slot.index()].last;
 			break;
 		}
-		if(display)
-			gameDisplay.displayCard(cardSlots[i].position().x(),cardSlots[i].position().y(),card.suit(),card.value(),0);
+		if(display){
+			if(card == NULL)
+				gameDisplay.drawBox(cardSlots[i].position().x(),cardSlots[i].position().y(),6,5,0);
+			else
+				gameDisplay.displayCard(cardSlots[i].position().x(),cardSlots[i].position().y(),card->suit(),card->value(),0);
+		}
 	}
 }
 
@@ -407,69 +410,4 @@ void stub_PrintResize(void) {
 	messageString << "Terminal is " << cols << "x" << lines;
 	// prints out the information of the new screen size in a top banner
 	gameDisplay.bannerTop(messageString.str());
-}
-/*
- * This function demonstrates some of the abilities of the Display class
- */
-void sampleDisplay(char key){
-	// using a stringstream rather than a string to make making the banner easier
-	stringstream messageString;
-
-	int cardX = 0;
-	int cardY = 0;
-	int suit = 0;
-	int number = 0;
-
-	int dragX = 0;
-	int dragY = 0;
-
-	// if a mouse event occurred
-	if (key == -1) {
-		// make a banner message
-		messageString.str("");
-		messageString << "A mouse event occurred x=" \
-			<< gameDisplay.getMouseEventX() << ", y=" \
-			<< gameDisplay.getMouseEventY() << ", bstate=" \
-			<< gameDisplay.getMouseEventButton();
-		// display a banner message
-		gameDisplay.bannerTop(messageString.str());
-		// record the location of the mouse event
-		cardX = gameDisplay.getMouseEventX();
-		cardY = gameDisplay.getMouseEventY();
-		// Some of the mouse click values are defined in display.h
-		// check if it was a left click
-		if (gameDisplay.getMouseEventButton()&LEFT_CLICK) {
-			// draw a random card at the click location
-			suit = rand()%5;
-			number = rand()%15;
-			gameDisplay.displayCard(cardX,cardY,suit,number, A_BOLD);
-		// check if it was a right click
-		} else if (gameDisplay.getMouseEventButton()&RIGHT_CLICK) {
-			// erase a portion of the screen in the shape of a card
-			gameDisplay.eraseBox(cardX,cardY,6,5);
-		// check for the start of a drag click
-		} else if (gameDisplay.getMouseEventButton()&LEFT_DOWN) {
-			// record start of the drag
-			dragX = cardX;
-			dragY = cardY;
-		// when the mouse is released
-		} else if (gameDisplay.getMouseEventButton()&LEFT_UP) {
-			// calculate size of the drag
-			int sizeX = abs(dragX-cardX);
-			int sizeY = abs(dragY-cardY);
-			// get to the top left corner of the drag area
-			if (dragX > cardX)
-				dragX = cardX;
-			if (dragY > cardY)
-				dragY = cardY;
-			// draw a box around the drag area
-			gameDisplay.drawBox(dragX, dragY, sizeX, sizeY, 0);
-		}
-	// if a key was pressed
-	} else if(key > 0) {
-		// make bottom a banner message saying that a key was pressed
-		messageString.str("");
-		messageString << "Key " << key << " pressed";
-		gameDisplay.bannerBottom(messageString.str());
-	}
 }
