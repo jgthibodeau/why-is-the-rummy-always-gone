@@ -3,13 +3,13 @@
 
 class Card { 
 private: 
-	int suit; 
-	int value; 
-	int points; 
+	int suitVal;
+	int valueVal;
+	int pointsVal;
 public: 
 	Card(int cardSuit, int cardValue, int cardPoints);
-	int suit(){return suit;} 
-	int value(){return value;} 
-	int points(){return points;}
+	int suit(){return suitVal;}
+	int value(){return valueVal;}
+	int points(){return pointsVal;}
 };
 #endif
