@@ -4,12 +4,12 @@ CardSlot::CardSlot(double x, double y, int width, int height, int type) : positi
 	heightVal = height;
 	typeVal = type;
 	highlight = false;
-	cardP = NULL;
+	indexVal = 0;
 }
-CardSlot::CardSlot(double x, double y, int width, int height, int type, Card *c) : positionPoint(x,y){
+CardSlot::CardSlot(double x, double y, int width, int height, int type, int index) : positionPoint(x,y){
 	widthVal = width;
 	heightVal = height;
 	typeVal = type;
 	highlight = false;
-	cardP = c;
+	indexVal = index;
 }

@@ -2,7 +2,6 @@
 // Name        : Gin_Rummy.cpp
 // Author      : Justin Thibodeau
 // Version     : 1.0
-// Description : Hello World in C++, Ansi-style
 //============================================================================
 
 #include "display.h"
@@ -10,6 +9,8 @@
 #include "Point.h"
 #include "CardSlot.h"
 #include "Card.h"
+#include "Deck.h"
+#include "DiscardPile.h"
 #include <signal.h>
 #include <ncurses.h>
 #include <math.h>
@@ -30,7 +31,8 @@ string playerName="";
 
 //game vars
 //Player player1, player2, curPlayer;
-//Deck deck
+Deck deck;
+Card cardBack(0,0,0);
 //DiscardPile discard;
 
 //display vars
@@ -75,19 +77,22 @@ void resetSelectedSlots();
 // moved set of sample commands
 void sampleDisplay(char key);
 
+//new Card(rand()%4+1,rand()%13+1,0)
+
 /*
 * This is the main function that starts the driver artifact.
 */
 int main(int argc, char* argv[])
 {
+	//initialize cardSlots for display
 	int numCols = (gameDisplay.getCols()-2)/8;
 	cardSlots[0] = CardSlot(2,2,0,0,CardSlot::deck);		//1 deck
-	cardSlots[1] = CardSlot(10,2,0,0,CardSlot::discard);		//1 discard pile
-	for(int i=0;i<10;i++){
-		cardSlots[i+2] = CardSlot(2+8*(i%numCols),12+(10*(int)(i/numCols)), 6, 5, CardSlot::player);	//10 player cards
+	cardSlots[1] = CardSlot(10,2,0,0,CardSlot::discard);	//1 discard pile
+	for(int i=0;i<10;i++){													//10 player cards
+		cardSlots[i+2] = CardSlot(2+8*(i%numCols),12+(10*(int)(i/numCols)), 6, 5, CardSlot::player, i);
 	}
-	for(int i=0;i<6;i++){
-		cardSlots[i+12] = CardSlot(2+8*(i%10),7+5*(i/10), 6, 5, CardSlot::combo);
+	for(int i=0;i<6;i++){													//6 combo cards
+		cardSlots[i+12] = CardSlot(2+8*(i%10),7+5*(i/10), 6, 5, CardSlot::combo, i);
 	}
 
 	// enable a interrupt triggered on a window resize
@@ -130,8 +135,8 @@ void gameLoop(){
 		if(key == '\n'){
 			GAME_STATE = IN_GAME;
 			bottomBanner = "";
-			//TODO
-			//Deck.initialize
+			deck.initialize();
+			//TODO deck.shuffle();
 			//Deal player cards
 			//Discard.initialize
 		}
@@ -162,9 +167,9 @@ void gameLoop(){
 				//if 2nd selected is player cards
 				if(selectedSlots[1] != NULL && (*selectedSlots[1]).type() == CardSlot::player){
 					//swap and unhighlight
-					//TODO Card temp == card1;
-					//card1 == card2;
-					//card2 == card1;
+					//TODO Card temp = curPlayer.cards[(*selectedSlots[0]).index()];
+					//TODO curPlayer.cards[(*selectedSlots[0]).index()] = curPlayer.cards[(*selectedSlots[1]).index()]
+					//TODO curPlayer.cards[(*selectedSlots[1]).index()] = temp;
 					resetSelectedSlots();
 				}
 			}
@@ -314,22 +319,27 @@ void drawCards(){
 					cardSlots[i].width()+2,cardSlots[i].height()+2,0);
 
 		//draw cards
-		switch (cardSlots[i].type()){
+		CardSlot slot = cardSlots[i];
+		Card card;
+		bool display = true;
+		switch (slot.type()){
 		case (CardSlot::deck):
-				gameDisplay.displayCard(cardSlots[i].position().x(),cardSlots[i].position().y(),0,0,0);
-				break;
+			card = cardBack;
+			break;
 		case (CardSlot::discard):
-				//if not knock phase
-				gameDisplay.displayCard(cardSlots[i].position().x(),cardSlots[i].position().y(),1,1,0);
-				break;
+			//TODO card = discardPile.last
+			break;
 		case (CardSlot::player):
-				gameDisplay.displayCard(cardSlots[i].position().x(),cardSlots[i].position().y(),2,2,0);
-				break;
+			//TODO card = player1.cards[slot.index()];
+			break;
 		case (CardSlot::combo):
-				//if knock phase
-				gameDisplay.displayCard(cardSlots[i].position().x(),cardSlots[i].position().y(),3,3,0);
-				break;
+			//TODO if not knock phase or last turn phase
+				display = false;
+			//TODO card = combos[slot.index()].last;
+			break;
 		}
+		if(display)
+			gameDisplay.displayCard(cardSlots[i].position().x(),cardSlots[i].position().y(),card.suit(),card.value(),0);
 	}
 }
 

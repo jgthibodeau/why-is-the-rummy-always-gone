@@ -12,7 +12,7 @@ private:
 	int heightVal;
 	bool highlight;
 	int typeVal;
-	Card *cardP;
+	int indexVal;
 
 public:
 	//types of slots
@@ -21,9 +21,9 @@ public:
 	static const int player = 2;
 	static const int combo = 3;
 
-	CardSlot() : positionPoint(0,0){widthVal=0; heightVal=0; highlight=false; typeVal=0; cardP=NULL;};
+	CardSlot() : positionPoint(0,0){widthVal=0; heightVal=0; highlight=false; typeVal=0; indexVal=0;};
 	CardSlot(double x, double y, int width, int height, int type);
-	CardSlot(double x, double y, int width, int height, int type, Card *c);
+	CardSlot(double x, double y, int width, int height, int type, int index);
 
 	// Extractors
 	Point position() { return positionPoint; }
@@ -31,12 +31,11 @@ public:
 	double height() { return heightVal; }
 	bool highlighted() { return highlight; }
 	int type() { return typeVal; }
-	Card *getCard() { return cardP; }
+	int index() { return indexVal; }
 
 	// Setters
 	void setBounds(int x, int y, int width, int height){ positionPoint.setPoint(x,y); widthVal=width;heightVal=height; }
 	void move(double a, double b){ positionPoint.move(a,b); }
 	void setHighlight(bool b){ highlight=b; }
-	void setCard(Card *c){ cardP = c; }
 };
 #endif
