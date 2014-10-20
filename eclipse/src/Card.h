@@ -8,8 +8,8 @@ private:
 	int pointsVal;
 public: 
 	Card(int cardSuit, int cardValue, int cardPoints);
-	int getSuit(){return suitVal;}
-	int getValue(){return valueVal;}
-	int getPoints(){return pointsVal;}
+	int suit(){return suitVal;}
+	int value(){return valueVal;}
+	int points(){return pointsVal;}
 };
 #endif
