@@ -8,7 +8,8 @@ class Deck {
 public:
   Deck();
   void initialize();
-  void shuffle();
+  void shuffle(); 
+  Card drawCard();
   std::vector<Card> cardDeck;
 };
 

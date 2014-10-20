@@ -25,4 +25,10 @@ void Deck::initialize(){
 void Deck::shuffle(){ 
 	std::srand(unsigned(std::time(0))); 
 	std::random_shuffle(cardDeck.begin(),cardDeck.end());
+} 
+
+Card Deck::drawCard(){ 
+	Card topCard = cardDeck.front(); //front returns a reference to the first card
+  cardDeck.erase(cardDeck.begin()); //begin returns the interator to the first card
+  return topCard;
 }
