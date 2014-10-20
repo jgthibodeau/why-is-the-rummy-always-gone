@@ -1,5 +1,7 @@
 #include "Deck.h"  
-#include "Card.h"
+#include "Card.h" 
+#include <algorithm> // std::random_shuffle 
+#include <ctime>   	// std::time
 
 Deck::Deck(){ 
 	initialize(); 
@@ -13,4 +15,9 @@ void Deck::initialize(){
 			cardDeck.push_back(Card(suit,value,value));
 		}
 	}
+} 
+
+void Deck::shuffle(){ 
+	std::srand(unsigned(std::time(0))); 
+	std::random_shuffle(cardDeck.begin(),cardDeck.end());
 }
