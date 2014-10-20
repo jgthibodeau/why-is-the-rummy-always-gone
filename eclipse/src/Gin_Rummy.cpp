@@ -74,6 +74,8 @@ void drawBanners();
 CardSlot *findCardSlot(int x, int y);
 //reset highlights and selected cards
 void resetSelectedSlots();
+//reset cardSlot positions based on window size
+void resizeCardSlots();
 
 //new Card(rand()%4+1,rand()%13+1,0)
 
@@ -83,15 +85,7 @@ void resetSelectedSlots();
 int main(int argc, char* argv[])
 {
 	//initialize cardSlots for display
-	int numCols = (gameDisplay.getCols()-2)/8;
-	cardSlots[0] = CardSlot(2,2,0,0,CardSlot::deck);		//1 deck
-	cardSlots[1] = CardSlot(10,2,0,0,CardSlot::discard);	//1 discard pile
-	for(int i=0;i<11;i++){									//11 player cards
-		cardSlots[i+2] = CardSlot(2+8*(i%numCols),12+(10*(int)(i/numCols)), 6, 5, CardSlot::player, i);
-	}
-	for(int i=0;i<6;i++){									//6 combo cards
-		cardSlots[i+13] = CardSlot(2+8*(i%10),7+5*(i/10), 6, 5, CardSlot::combo, i);
-	}
+	resizeCardSlots();
 
 	// enable a interrupt triggered on a window resize
 	signal(SIGWINCH, detectResize); // enable the window resize signal
@@ -306,7 +300,8 @@ void draw(){
 	gameDisplay.eraseBox(0,0,100000,1000000);
 	gameDisplay.fillBackground();
 	drawBanners();
-	drawCards();
+	if(GAME_STATE == IN_GAME)
+		drawCards();
 }
 
 void drawCards(){
@@ -384,6 +379,18 @@ void resetSelectedSlots(){
 	selectedSlots[1] = NULL;
 }
 
+void resizeCardSlots(){
+	int numCols = (gameDisplay.getCols()-2)/8;
+	cardSlots[0] = CardSlot(2,2,0,0,CardSlot::deck);		//1 deck
+	cardSlots[1] = CardSlot(10,2,0,0,CardSlot::discard);	//1 discard pile
+	for(int i=0;i<11;i++){									//11 player cards
+		cardSlots[i+2] = CardSlot(2+8*(i%numCols),12+(5*(int)(i/numCols)), 6, 5, CardSlot::player, i);
+	}
+	for(int i=0;i<6;i++){									//6 combo cards
+		cardSlots[i+13] = CardSlot(2+8*(i%10),7+5*(i/10), 6, 5, CardSlot::combo, i);
+	}
+}
+
 /*
  * This is the interrupt service routine called when the resize screen
  * signal is captured.
@@ -393,8 +400,9 @@ void detectResize(int sig) {
     gameDisplay.handleResize(sig);
 	// re-enable the interrupt for a window resize
     signal(SIGWINCH, detectResize);
-	/*INSERT YOUR OWN SCREEN UPDATE CODE instead of stub_PrintResize*/
 
+    //resize positions for cardSlots
+    resizeCardSlots();
 }
 
 /*
