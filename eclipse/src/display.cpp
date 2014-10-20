@@ -242,7 +242,7 @@ void display::printFace(int suit, int number, int line, int printAtt) {
 		if (line==0)
 			printw("%s %s ", spades, hearts);
 		if (line==1)
-            printw("Play");
+            printw("Draw");
 		if (line==2)
 			printw("%s %s ", diamonds, clubs);
 		attroff(COLOR_PAIR(1) | printAtt);
