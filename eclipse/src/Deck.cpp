@@ -10,9 +10,14 @@ Deck::Deck(){
 void Deck::initialize(){ 
 	cardDeck.clear(); //make sure we are starting with an empty deck
 	int suit, value;  
-	for (suit = 1; suit < 5; suit++){ //check these suit numbers
-		for (value = 1; value <14; value++){ 
-			cardDeck.push_back(Card(suit,value,value));
+	for (suit = 1; suit < 5; suit++){
+		for (value = 1; value <14; value++){  
+			if (value <= 10){
+			cardDeck.push_back(Card(suit,value,value)); 
+			} 
+			else{ 
+			cardDeck.push_back(Card(suit,value,10));
+			}
 		}
 	}
 } 
