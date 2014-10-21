@@ -4,13 +4,12 @@ CardSlot::CardSlot(double x, double y, int width, int height, int type) : positi
 	heightVal = height;
 	typeVal = type;
 	highlight = false;
+	indexVal = 0;
 }
-
-void CardSlot::move(double a, double b){
-	positionPoint.move(a,b);
+CardSlot::CardSlot(double x, double y, int width, int height, int type, int index) : positionPoint(x,y){
+	widthVal = width;
+	heightVal = height;
+	typeVal = type;
+	highlight = false;
+	indexVal = index;
 }
-
-int CardSlot::deck = deck;
-int CardSlot::discard = discard;
-int CardSlot::player = player;
-int CardSlot::combo = combo;

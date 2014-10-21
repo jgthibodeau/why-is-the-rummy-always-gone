@@ -2,13 +2,15 @@
 // Name        : Gin_Rummy.cpp
 // Author      : Justin Thibodeau
 // Version     : 1.0
-// Description : Hello World in C++, Ansi-style
 //============================================================================
 
 #include "display.h"
 #include "Key.h"
 #include "Point.h"
 #include "CardSlot.h"
+#include "Card.h"
+#include "Deck.h"
+#include "DiscardPile.h"
 #include <signal.h>
 #include <ncurses.h>
 #include <math.h>
@@ -28,10 +30,10 @@ int GAME_STATE = OUT_GAME;
 string playerName="";
 
 //game vars
-//players
-//whose turn
-//deck
-//discard pile
+//Player player1, player2, curPlayer;
+Deck deck;
+Card cardBack(0,0,0);
+DiscardPile discardPile;
 
 //display vars
 display gameDisplay;
@@ -42,54 +44,53 @@ Key submitKey('s', "Submit");
 Key cancelKey('c', "Cancel");
 Key quitKey('q', "Quit");
 //positions to display cards
-CardSlot cardSlots[18];		//1 deck, 1 discard pile, 6 combo piles, 10 player cards
+const int NUMBERCARDSLOTS = 19;
+CardSlot cardSlots[NUMBERCARDSLOTS];	//1 deck, 1 discard pile, 6 combo piles, 10 player cards
+CardSlot *selectedSlots[2];				//used for selecting specific cards
 //banner messages to display controls and info
 string startMessage = "Gin Rummy - "+startKey.toString()+"\t"+quitKey.toString();
 string drawMessage = "Gin Rummy - Your Turn - Draw - "+quitKey.toString();
-string discardMessage = "Gin Rummy - Your Turn - "+knockKey.toString()+"\t"+quitKey.toString();
+string playMessage = "Gin Rummy - Your Turn - "+knockKey.toString()+"\t"+quitKey.toString();
 string knockMessage = "Gin Rummy - Your Turn - Knock - "+submitKey.toString()+"\t"+cancelKey.toString()+"\t"+quitKey.toString();
 string notTurnMessage = "Gin Rummy - Opponent's Turn - "+quitKey.toString();
 string nameMessage = "Enter your name: ";
+string dontComboMessage = "Those cards don't combo!";
+string badDeadwoodMessage = "You have too much remaining deadwood!";
+string topBanner,bottomBanner;
 
 // Signal Subroutine for Window Resize
 static void detectResize (int sig);
 // stub artifact for what the game does when the screen resizes
 void stub_PrintResize(void);
-// sets the text of the displays topBanner
-void setTopBanner(string s);
-// sets the text of the displays bottomBanner
-void setBottomBanner(string s);
 //main game loop
 void gameLoop();
-//main draw methid
+//main draw method
 void draw();
-//draw cards and other things
+//draw cards
 void drawCards();
+//draw the displays banners
+void drawBanners();
 //find a cardSlot at a given point
 CardSlot *findCardSlot(int x, int y);
-// moved set of sample commands
-void sampleDisplay(char key);
+//reset highlights and selected cards
+void resetSelectedSlots();
+//reset cardSlot positions based on window size
+void resizeCardSlots();
+
+//new Card(rand()%4+1,rand()%13+1,0)
 
 /*
 * This is the main function that starts the driver artifact.
 */
 int main(int argc, char* argv[])
 {
-	int numCols = (gameDisplay.getCols()-2)/8;
-	cardSlots[0] = CardSlot(2,2,0,0,CardSlot::deck);		//1 deck
-	cardSlots[1] = CardSlot(9,2,0,0,CardSlot::discard);	//1 discard pile
-	for(int i=2;i<12;i++){
-		cardSlots[i] = CardSlot(2+8*(i%numCols),10+(10*(int)(i/numCols)), 6, 5, CardSlot::player);	//10 player cards
-	}
-	//TODO preformat combo slots
-	for(int i=12;i<18;i++){
-		cardSlots[i] = CardSlot(9+8*(i%10),1+5*(i/10), 6, 5, CardSlot::combo);
-	}
+	//initialize cardSlots for display
+	resizeCardSlots();
 
 	// enable a interrupt triggered on a window resize
 	signal(SIGWINCH, detectResize); // enable the window resize signal
 
-	// infinite loop for the main game, press ctrl-c to quit
+	// infinite loop for the main game
 	for (;;) {
 		gameLoop();
 		draw();
@@ -106,8 +107,10 @@ void gameLoop(){
 	if(key == quitKey.key())
 		std::exit(0);
 
+	//regular game
 	switch(GAME_STATE){
 	case OUT_GAME:
+		topBanner = startMessage;
 		//if startKey pushed
 		if(key == startKey.key()){
 			//go to ENTER_NAME state
@@ -115,9 +118,28 @@ void gameLoop(){
 		}
 		break;
 	case ENTER_NAME:
+		//write startMessage
+		topBanner = startMessage;
+		//prompt for name
+		bottomBanner = nameMessage+playerName;
+
 		//if enter key pressed
-		if(key == '\n')
+		if(key == '\n'){
 			GAME_STATE = IN_GAME;
+			bottomBanner = "";
+			//initialize stuff
+			deck.initialize();
+			deck.shuffle();
+			discardPile.initialize();
+			//Deal player cards
+			for(int i=0;i<10;i++){
+				//TODO player1.addCard(deck.drawCard());
+			}
+			for(int i=0;i<10;i++){
+				//TODO player2.addCard(deck.drawCard());
+			}
+			discardPile.addCard(deck.drawCard());
+		}
 		//if delete key pressed
 		else if((key == 7 || key == 74) && playerName.size() > 0)
 			playerName.erase (playerName.end() - 1);
@@ -129,51 +151,151 @@ void gameLoop(){
 		//if mouseClick
 		if(key == -1){
 			//get card clicked if any
-			findCardSlot(gameDisplay.getMouseEventX(), gameDisplay.getMouseEventY());
+			CardSlot *temp = findCardSlot(gameDisplay.getMouseEventX(), gameDisplay.getMouseEventY());
+			if(selectedSlots[0] == NULL)
+				selectedSlots[0] = temp;
+			else
+				selectedSlots[1] = temp;
 		}
 		//if player turn
-			//if click 1st player card
+		//TODO if(curPlayer == player1){
+			//allow player to swap cards around
+			//if 1st selected is player card
+			if(selectedSlots[0] != NULL && (*selectedSlots[0]).type() == CardSlot::player){
 				//highlight it
-			//if click 2nd player card
-				//swap with highlighted card
+				(*selectedSlots[0]).setHighlight(true);
+				//if 2nd selected is player cards
+				if(selectedSlots[1] != NULL && (*selectedSlots[1]).type() == CardSlot::player){
+					//swap and unhighlight
+					//TODO Card temp = curPlayer.cards[(*selectedSlots[0]).index()];
+					//TODO curPlayer.cards[(*selectedSlots[0]).index()] = curPlayer.cards[(*selectedSlots[1]).index()]
+					//TODO curPlayer.cards[(*selectedSlots[1]).index()] = temp;
+					resetSelectedSlots();
+				}
+			}
+			//player phases
+			//TODO switch(curPlayer.phase){
+				//if in draw phase
+				//TODO case(Player::draw):
+					topBanner = drawMessage;
 
-			//if in draw phase
-				//if player clicks deck
-					//give next deck card and go to discard phase
-				//if player clicks discarded card
-					//give that card and go to discard phase
+					//if player click deck
+					if((selectedSlots[0] != NULL && (*selectedSlots[0]).type() == CardSlot::deck) ||
+							(selectedSlots[1] != NULL && (*selectedSlots[1]).type() == CardSlot::deck)){
+						//TODO give next deck card and go to discard phase
+						resetSelectedSlots();
 
-			//if in discard phase
-				//if knockKey pressed
-					//go to knock phase
-				//if click 1st player card
-					//highlight it
-				//if click discard card
-					//discard highlighted card and go to next player
+					}
+					//if player clicks discarded card
+					if((selectedSlots[0] != NULL && (*selectedSlots[0]).type() == CardSlot::discard) ||
+							(selectedSlots[1] != NULL && (*selectedSlots[1]).type() == CardSlot::discard)){
+						//TODO give that card and go to discard phase
+						resetSelectedSlots();
+					}
 
-			//if knock phase
-				//draw player cards
-				//draw 3 slots for combos
-				//draw other players played combos
+				//if in play phase
+				//TODO case(Player::play):
+					topBanner = playMessage;
 
-				//if click 1st player card
-					//highlight it
-				//if click combo box
-					//if highlighted card can be combo'd with this box
-						//put it in this combo and remove from player cards
-					//else
-						//write "cards don't combo"
-				//if doneKey pressed
-					//if deadwood ok
-						//go to next player in knock turn
-					//else
-						//write "too much deadwood"
-				//if cancelKey pressed
-					//move cards from any combos to players cards
-					//go to discard phase
+					//if knockKey pressed
+					if(key == knockKey.key()){
+						//TODO curPlayer.phase = knock;
+					}
+					if(selectedSlots[0] != NULL){
+						//if player card is 1st selected selected
+						if((*selectedSlots[0]).type() == CardSlot::player){
+							(*selectedSlots[0]).setHighlight(true);
+							//if 2nd selected is discard
+							if((*selectedSlots[0]).type() == CardSlot::discard){
+								//discard selected and reset
+								//TODO discardPile add selected
+								resetSelectedSlots();
+								//TODO go to next player
+							}
+						}
+						//if not player card as 1st selected
+						else
+							//reset selected
+							resetSelectedSlots();
+					}
+
+				//if knock phase
+				//TODO case(Player::knock):
+					topBanner = knockMessage;
+
+					if(selectedSlots[0] != NULL){
+						//if player card is 1st selected selected
+						if((*selectedSlots[0]).type() == CardSlot::player){
+							(*selectedSlots[0]).setHighlight(true);
+							//if 2nd selected is combo
+							if((*selectedSlots[0]).type() == CardSlot::combo){
+								//TODO try to move this card into this combo
+								//TODO if combo ok
+									bottomBanner = "";
+								//TODO else
+									bottomBanner = dontComboMessage;
+								resetSelectedSlots();
+							}
+						}
+						//if not player card as 1st selected
+						else
+							//reset selected
+							resetSelectedSlots();
+					}
+					//if submit key pressed
+					if(key == submitKey.key()){
+						//if deadwood ok
+						//TODO check currentplayer deadwood
+						//TODO if deadwood ok
+							//TODO go to next player, set phase to last turn
+							bottomBanner = "";
+						//TODO else
+							bottomBanner = badDeadwoodMessage;
+					}
+					//if cancelKey pressed
+					if(key == cancelKey.key()){
+						//TODO remove cards from any combos to curPlayers cards
+						//TODO go to play phase
+					}
+
+				//if last turn phase
+				//TODO case(Player::last):
+					topBanner = knockMessage;
+
+					if(selectedSlots[0] != NULL){
+						//if player card is 1st selected selected
+						if((*selectedSlots[0]).type() == CardSlot::player){
+							(*selectedSlots[0]).setHighlight(true);
+							//if 2nd selected is combo
+							if((*selectedSlots[0]).type() == CardSlot::combo){
+								//TODO try to move this card into this combo
+								//TODO if combo ok
+									bottomBanner = "";
+								//TODO else
+									bottomBanner = dontComboMessage;
+								resetSelectedSlots();
+							}
+						}
+						//if not player card as 1st selected
+						else
+							//reset selected
+							resetSelectedSlots();
+					}
+					//if submit key pressed
+					if(key == submitKey.key()){
+						//TODO go to end game
+					}
+					//if cancelKey pressed
+					if(key == cancelKey.key()){
+						//TODO remove cards from any combos to curPlayers cards
+					}
+			//TODO end case
 
 		//if ai turn
+		//if(curPlayer == player2){
+			topBanner = notTurnMessage;
 			//execute ai code
+		//}
 		break;
 	}
 
@@ -185,72 +307,61 @@ void draw(){
 	//erase the canvas
 	gameDisplay.eraseBox(0,0,100000,1000000);
 	gameDisplay.fillBackground();
-
-	//draw based on game state
-	switch(GAME_STATE){
-	case OUT_GAME:
-		//write startMessage
-		setTopBanner(startMessage);
-		break;
-	case ENTER_NAME:
-		//write startMessage
-		setTopBanner(startMessage);
-		//prompt for name
-		setBottomBanner(nameMessage+playerName);
-		break;
-	case IN_GAME:
-		//if player turn
-			//if in draw phase
-				//write drawMessage
-				setTopBanner(drawMessage);
-
-			//if in discard phase
-				//write discardMessage
-				setTopBanner(discardMessage);
-
-			//if knock phase
-				//write knockMessage
-				setTopBanner(knockMessage);
-				//if click combo box
-					//if highlighted card can't be combo'd with this box
-						//write "cards don't combo"
-				//if doneKey pressed
-					//if deadwood not ok
-						//write "too much deadwood"
-
-		//if ai turn
-			//write notTurnMessage
-			setTopBanner(notTurnMessage);
-
+	drawBanners();
+	if(GAME_STATE == IN_GAME)
 		drawCards();
-		break;
-	}
 }
 
 void drawCards(){
 	//draw all cards/slots
-	for(int i=0;i<18;i++){
-		//if card exists
-			//if card is deck, draw it
-			//if knock phase and card is combo, draw it
-			//if not knock phase and card is discard, draw it
-				//draw highlight
-				if(cardSlots[i].highlighted())
-					gameDisplay.drawBox(cardSlots[i].position().x()-1, cardSlots[i].position().y()-1,
-							cardSlots[i].width()+2,cardSlots[i].height()+2,0);
-				//draw card
-				if(cardSlots[i].type() == CardSlot::deck)
-					gameDisplay.displayCard(cardSlots[i].position().x(),cardSlots[i].position().y(),2,2,0);
+	for(int i=0;i<NUMBERCARDSLOTS;i++){
+		//draw highlight
+		if(cardSlots[i].highlighted())
+			gameDisplay.drawBox(cardSlots[i].position().x()-1, cardSlots[i].position().y()-1,
+					cardSlots[i].width()+2,cardSlots[i].height()+2,0);
+
+		//draw cards
+		CardSlot slot = cardSlots[i];
+		Card* card = NULL;
+		bool display = true;
+		switch (slot.type()){
+		case (CardSlot::deck):
+			card = &cardBack;
+			break;
+		case (CardSlot::discard):
+			//*card = discardPile.topCard();
+			break;
+		case (CardSlot::player):
+			//TODO card = player1.cards[slot.index()];
+			break;
+		case (CardSlot::combo):
+			//TODO if not knock phase or last turn phase
+				display = false;
+			//TODO card = combos[slot.index()].last;
+			break;
+		}
+		if(display){
+			if(card == NULL)
+				gameDisplay.drawBox(cardSlots[i].position().x(),cardSlots[i].position().y(),6,5,0);
+			else
+				gameDisplay.displayCard(cardSlots[i].position().x(),cardSlots[i].position().y(),card->suit(),card->value(),0);
+		}
 	}
-	//if in knock phase
-		//draw combos
-	//else
-		//draw discard cards
-		//for(int i=0;i<DISCARDCARDS;i++){
-			//if card exists
-			//gameDisplay.displayCard(discardSlot.position().x(),discardSlot.position().y(),1,1,0);
-			//else stop drawing
-		//}
+}
+
+void drawBanners(){
+	stringstream messageString;
+	if(topBanner != ""){
+		messageString.str("");
+		messageString << topBanner;
+		gameDisplay.bannerTop(messageString.str());
+	}
+
+	if(bottomBanner != ""){
+		messageString.str("");
+		messageString << bottomBanner;
+		gameDisplay.bannerBottom(messageString.str());
+	}
 }
 
 CardSlot *findCardSlot(int x, int y){
@@ -261,25 +372,31 @@ CardSlot *findCardSlot(int x, int y){
 		maxX=minX+cardSlots[i].width();
 		minY=cardSlots[i].position().y();
 		maxY=minY+cardSlots[i].height();
-		//set highlighted
+		//return CardSlot if found
 		if(x>=minX && x<=maxX && y>=minY && y<=maxY){
-			cardSlots[i].setHighlight(!cardSlots[i].highlighted());
+			return &cardSlots[i];
 		}
 	}
 	return NULL;
 }
 
-void setTopBanner(string s){
-	stringstream messageString;
-	messageString.str("");
-	messageString << s;
-	gameDisplay.bannerTop(messageString.str());
+void resetSelectedSlots(){
+	(*selectedSlots[0]).setHighlight(false);
+	(*selectedSlots[1]).setHighlight(false);
+	selectedSlots[0] = NULL;
+	selectedSlots[1] = NULL;
 }
-void setBottomBanner(string s){
-	stringstream messageString;
-	messageString.str("");
-	messageString << s;
-	gameDisplay.bannerBottom(messageString.str());
+
+void resizeCardSlots(){
+	int numCols = (gameDisplay.getCols()-2)/8;
+	cardSlots[0] = CardSlot(2,2,0,0,CardSlot::deck);		//1 deck
+	cardSlots[1] = CardSlot(10,2,0,0,CardSlot::discard);	//1 discard pile
+	for(int i=0;i<11;i++){									//11 player cards
+		cardSlots[i+2] = CardSlot(2+8*(i%numCols),12+(5*(int)(i/numCols)), 6, 5, CardSlot::player, i);
+	}
+	for(int i=0;i<6;i++){									//6 combo cards
+		cardSlots[i+13] = CardSlot(2+8*(i%10),7+5*(i/10), 6, 5, CardSlot::combo, i);
+	}
 }
 
 /*
@@ -291,8 +408,9 @@ void detectResize(int sig) {
     gameDisplay.handleResize(sig);
 	// re-enable the interrupt for a window resize
     signal(SIGWINCH, detectResize);
-	/*INSERT YOUR OWN SCREEN UPDATE CODE instead of stub_PrintResize*/
 
+    //resize positions for cardSlots
+    resizeCardSlots();
 }
 
 /*
@@ -308,69 +426,4 @@ void stub_PrintResize(void) {
 	messageString << "Terminal is " << cols << "x" << lines;
 	// prints out the information of the new screen size in a top banner
 	gameDisplay.bannerTop(messageString.str());
-}
-/*
- * This function demonstrates some of the abilities of the Display class
- */
-void sampleDisplay(char key){
-	// using a stringstream rather than a string to make making the banner easier
-	stringstream messageString;
-
-	int cardX = 0;
-	int cardY = 0;
-	int suit = 0;
-	int number = 0;
-
-	int dragX = 0;
-	int dragY = 0;
-
-	// if a mouse event occurred
-	if (key == -1) {
-		// make a banner message
-		messageString.str("");
-		messageString << "A mouse event occurred x=" \
-			<< gameDisplay.getMouseEventX() << ", y=" \
-			<< gameDisplay.getMouseEventY() << ", bstate=" \
-			<< gameDisplay.getMouseEventButton();
-		// display a banner message
-		gameDisplay.bannerTop(messageString.str());
-		// record the location of the mouse event
-		cardX = gameDisplay.getMouseEventX();
-		cardY = gameDisplay.getMouseEventY();
-		// Some of the mouse click values are defined in display.h
-		// check if it was a left click
-		if (gameDisplay.getMouseEventButton()&LEFT_CLICK) {
-			// draw a random card at the click location
-			suit = rand()%5;
-			number = rand()%15;
-			gameDisplay.displayCard(cardX,cardY,suit,number, A_BOLD);
-		// check if it was a right click
-		} else if (gameDisplay.getMouseEventButton()&RIGHT_CLICK) {
-			// erase a portion of the screen in the shape of a card
-			gameDisplay.eraseBox(cardX,cardY,6,5);
-		// check for the start of a drag click
-		} else if (gameDisplay.getMouseEventButton()&LEFT_DOWN) {
-			// record start of the drag
-			dragX = cardX;
-			dragY = cardY;
-		// when the mouse is released
-		} else if (gameDisplay.getMouseEventButton()&LEFT_UP) {
-			// calculate size of the drag
-			int sizeX = abs(dragX-cardX);
-			int sizeY = abs(dragY-cardY);
-			// get to the top left corner of the drag area
-			if (dragX > cardX)
-				dragX = cardX;
-			if (dragY > cardY)
-				dragY = cardY;
-			// draw a box around the drag area
-			gameDisplay.drawBox(dragX, dragY, sizeX, sizeY, 0);
-		}
-	// if a key was pressed
-	} else if(key > 0) {
-		// make bottom a banner message saying that a key was pressed
-		messageString.str("");
-		messageString << "Key " << key << " pressed";
-		gameDisplay.bannerBottom(messageString.str());
-	}
 }
