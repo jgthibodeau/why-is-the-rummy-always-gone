@@ -29,6 +29,6 @@ void Deck::shuffle(){
 
 Card Deck::drawCard(){ 
 	Card topCard = cardDeck.front(); //front returns a reference to the first card
-  cardDeck.erase(cardDeck.begin()); //begin returns the interator to the first card
-  return topCard;
+	cardDeck.erase(cardDeck.begin()); //begin returns the interator to the first card
+	return topCard;
 }

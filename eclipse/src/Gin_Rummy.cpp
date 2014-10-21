@@ -33,7 +33,7 @@ string playerName="";
 //Player player1, player2, curPlayer;
 Deck deck;
 Card cardBack(0,0,0);
-//DiscardPile discard;
+DiscardPile discardPile;
 
 //display vars
 display gameDisplay;
@@ -127,10 +127,18 @@ void gameLoop(){
 		if(key == '\n'){
 			GAME_STATE = IN_GAME;
 			bottomBanner = "";
+			//initialize stuff
 			deck.initialize();
-			//TODO deck.shuffle();
+			deck.shuffle();
+			discardPile.initialize();
 			//Deal player cards
-			//Discard.initialize
+			for(int i=0;i<10;i++){
+				//TODO player1.addCard(deck.drawCard());
+			}
+			for(int i=0;i<10;i++){
+				//TODO player2.addCard(deck.drawCard());
+			}
+			discardPile.addCard(deck.drawCard());
 		}
 		//if delete key pressed
 		else if((key == 7 || key == 74) && playerName.size() > 0)
@@ -321,7 +329,7 @@ void drawCards(){
 			card = &cardBack;
 			break;
 		case (CardSlot::discard):
-			//TODO card = discardPile.last
+			//*card = discardPile.topCard();
 			break;
 		case (CardSlot::player):
 			//TODO card = player1.cards[slot.index()];
