@@ -8,7 +8,7 @@ Player::Player(string name, int score, int turnPhase, bool activity)
     name = name;
     score = score;
     turnPhase = turnPhase;
-    active = activity;
+    activity = activity;
 }
 
 
@@ -53,10 +53,10 @@ Card Player::removeCard(int index){
 
 ///returns card from hand at index without deleting
  Card Player::getCard(int index){
-    if (index <0 || index > Hand.size()-1){
-        //cout << "sorry" << endl;
-    	Card c(0,0,0);
-    	return c;
+    if (index <1 || index > Hand.size()-1){
+        cout << "sorry" << endl;
+        Card card(0,0,0);
+        return card;
     }
     list<Card>::iterator it = Hand.begin();
     advance(it,index);
@@ -76,5 +76,5 @@ void Player::swapCard(int index1, int index2){
     advance(card2,index2);
     Card temp = *card1;
     *card1 = *card2;
-    *card2 = *card1;
+    *card2 = temp;
 }

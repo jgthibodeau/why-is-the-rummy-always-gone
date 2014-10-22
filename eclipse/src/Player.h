@@ -6,7 +6,6 @@
 #include "Card.h"
 using namespace std;
 
-
 class Player
 {
     private:
@@ -54,6 +53,7 @@ class Player
 
     ///swaps two cards
     void swapCard(int index1, int index2);
+
 
 };
 
