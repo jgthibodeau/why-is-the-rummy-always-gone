@@ -9,7 +9,8 @@ private:
 public:
   Combo();
   void initialize(); 
-  bool addCard(Card c);
+  bool addCard(Card c); 
+  void toString();
   std::deque<Card> comboSet; 
 }; 
 
