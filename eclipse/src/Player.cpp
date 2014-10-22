@@ -3,12 +3,12 @@
 #include <iostream>
 using namespace std;
 
-Player::Player(string n, int s, int t, bool a)
+Player::Player(string name, int score, int turnPhase, bool activity)
 {
-    name = name;
-    score = score;
-    turnPhase = turnPhase;
-    activity = activity;
+    name = n;
+    score = s;
+    turnPhase = t;
+    active = a;
 }
 
 
@@ -16,7 +16,7 @@ Player::Player(string n, int s, int t, bool a)
 int Player::calculateScore(){
     int score = 0;
     for (list<Card>::iterator it = Hand.begin(); it != Hand.end(); ++it){
-        score += (*it).pointsVal;
+        score += (*it).points();
     }
 
     return score;
@@ -37,12 +37,28 @@ void Player::addCard(Card card){
     Hand.push_back(card);
 }
 
+///remove card from hand at index
 void Player::removeCard(int index){
     if (index <1 || index > Hand.size()){
-        cout << "sorry" << endl;
+        //cout << "sorry" << endl;
         return;
     }
     list<Card>::iterator it = Hand.begin();
     advance(it,index-1);
     it = Hand.erase(it);
+}
+
+///returns card from hand at index without deleting
+ Card Player::getCard(int index){
+    if (index <1 || index > Hand.size()){
+        //cout << "sorry" << endl;
+    }
+    list<Card>::iterator it = Hand.begin();
+    advance(it,index-1);
+    return *it;
+}
+
+///returns size of player's current hand
+int Player::handSize(){
+    return Hand.size();
 }
