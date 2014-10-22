@@ -331,7 +331,7 @@ void drawCards(){
 			card = &c;
 			break;
 		case (CardSlot::player):
-			//TODO c = player1.getCard(slot.index());
+			c = player1.getCard(slot.index());
 			card = &c;
 			break;
 		case (CardSlot::combo):

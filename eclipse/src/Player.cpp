@@ -39,7 +39,7 @@ void Player::addCard(Card card){
 
 void Player::removeCard(int index){
     if (index <1 || index > Hand.size()){
-        cout << "sorry" << endl;
+        //cout << "sorry" << endl;
         return;
     }
     list<Card>::iterator it = Hand.begin();
@@ -49,7 +49,7 @@ void Player::removeCard(int index){
 
  Card Player::getCard(int index){
     if (index <1 || index > Hand.size()){
-        cout << "sorry" << endl;
+        //cout << "sorry" << endl;
     }
     list<Card>::iterator it = Hand.begin();
     advance(it,index-1);
