@@ -3,7 +3,7 @@
 #include <iostream>
 using namespace std;
 
-Player::Player(string n, int s, int t, bool a)
+Player::Player(string name, int score, int turnPhase, bool activity)
 {
     name = name;
     score = score;
@@ -37,6 +37,7 @@ void Player::addCard(Card card){
     Hand.push_back(card);
 }
 
+///remove card from hand at index
 void Player::removeCard(int index){
     if (index <1 || index > Hand.size()){
         cout << "sorry" << endl;
@@ -47,6 +48,7 @@ void Player::removeCard(int index){
     it = Hand.erase(it);
 }
 
+///returns card from hand at index without deleting
  Card Player::getCard(int index){
     if (index <1 || index > Hand.size()){
         cout << "sorry" << endl;
@@ -54,4 +56,9 @@ void Player::removeCard(int index){
     list<Card>::iterator it = Hand.begin();
     advance(it,index-1);
     return *it;
+}
+
+///returns size of player's current hand
+int Player::handSize(){
+    return Hand.size();
 }
