@@ -68,7 +68,7 @@ int Player::handSize(){
 
  ///swaps the cards located in two indices in player's hand
 void Player::swapCard(int index1, int index2){
-    if(index1 >= Hand.size() || index2 >= Hand.size())){
+    if(index1 >= Hand.size() || index2 >= Hand.size()){
         return;
     }
     list<Card>::iterator card1 = Hand.begin();
