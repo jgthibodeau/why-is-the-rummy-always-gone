@@ -6,7 +6,6 @@
 #include "Card.h"
 using namespace std;
 
-
 class Player
 {
     private:
@@ -17,6 +16,7 @@ class Player
         bool active;  ///is it player's turn?
 
     public:
+        Player(name = "", score=0, turnPhase=0, activity=0);
         Player(string name, int score, int turnPhase, bool activity);
 
     ///constants for turnPhase
@@ -54,6 +54,7 @@ class Player
 
     ///swaps two cards
     void swapCard(int index1, int index2);
+
 
 };
 
