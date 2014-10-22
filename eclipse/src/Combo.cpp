@@ -11,11 +11,13 @@ void Combo::initialize(){
 	comboSet.clear();
 }  
 
-string Combo::toString(){
-	string output = "";
-	for (auto i = comboSet.begin(); i != comboSet.end(); ++i){
-		output = output + comboSet.at(i).toString();
-	}
+
+string Combo::toString(){ 
+	string output = ""; 
+	for (deque<Card>::iterator it = comboSet.begin(); it != comboSet.end(); ++it){
+	//for (auto i = comboSet.begin(); i != comboSet.end(); ++i){ 
+		output = output + (*it).toString();
+	} 
 	return output;
 }
 

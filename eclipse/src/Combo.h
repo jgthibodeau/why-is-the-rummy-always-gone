@@ -7,11 +7,11 @@ class Combo {
 private: 
 	bool isSet;
 public:
-  Combo();
-  void initialize(); 
-  bool addCard(Card c); 
-  string toString();
-  std::deque<Card> comboSet; 
+	Combo();
+	void initialize();
+	bool addCard(Card c);
+	string toString();
+	std::deque<Card> comboSet;
 }; 
 
 #endif
