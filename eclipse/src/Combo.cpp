@@ -9,13 +9,25 @@ Combo::Combo(){
 
 void Combo::initialize(){ 
 	comboSet.clear();
+}   
+
+bool Combo::isEmpty(){ 
+	return comboSet.empty();
 }  
 
+Card Combo::showCard(){ 
+	return comboSet.back();
+}
+
+Card Combo::removeCard(){ 
+	Card topCard = comboSet.back(); //end returns a reference to the last card
+	comboSet.erase(comboSet.end()); //begin returns the interator to the first card
+	return topCard;
+}
 
 string Combo::toString(){ 
 	string output = ""; 
 	for (deque<Card>::iterator it = comboSet.begin(); it != comboSet.end(); ++it){
-	//for (auto i = comboSet.begin(); i != comboSet.end(); ++i){ 
 		output = output + (*it).toString();
 	} 
 	return output;
