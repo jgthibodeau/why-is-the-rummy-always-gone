@@ -16,6 +16,10 @@ void DiscardPile::addCard(Card c){
 	discardDeck.push_back(c);
 }
 
+bool DiscardPile::isEmpty(){ 
+	return discardDeck.empty();
+}
+
 Card DiscardPile::removeCard(){ 
 	Card topCard = discardDeck.back(); //end returns a reference to the last card
 	discardDeck.erase(discardDeck.end()); //begin returns the interator to the first card

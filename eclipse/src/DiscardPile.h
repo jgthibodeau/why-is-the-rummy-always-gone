@@ -7,7 +7,8 @@ class DiscardPile {
 public:
   DiscardPile();
   void initialize(); 
-  void addCard(Card c);
+  void addCard(Card c); 
+  bool isEmpty();
   Card removeCard(); 
   Card topCard();
   std::vector<Card> discardDeck;
