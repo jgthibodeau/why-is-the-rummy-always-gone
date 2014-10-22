@@ -46,3 +46,12 @@ void Player::removeCard(int index){
     advance(it,index-1);
     it = Hand.erase(it);
 }
+
+ Card Player::getCard(int index){
+    if (index <1 || index > Hand.size()){
+        cout << "sorry" << endl;
+    }
+    list<Card>::iterator it = Hand.begin();
+    advance(it,index-1);
+    return *it;
+}
