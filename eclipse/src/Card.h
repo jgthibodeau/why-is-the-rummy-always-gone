@@ -1,5 +1,7 @@
 #ifndef CARD_H
-#define CARD_H  
+#define CARD_H
+#include <string>
+using namespace std;
 //#include "Player.h"
 class Player;
 
@@ -10,8 +12,9 @@ private:
 	int pointsVal; 
 	Player* owner;
 public: 
-	Card(){suitVal=0;valueVal=0;pointsVal=0;}
+	Card(){suitVal=0;valueVal=0;pointsVal=0;owner=NULL;}
 	Card(int cardSuit, int cardValue, int cardPoints);
+	string toString();
 	Card(int cardSuit, int cardValue, int cardPoints, Player* p);
 	void makeOwner(Player* play);
 	int suit(){return suitVal;}

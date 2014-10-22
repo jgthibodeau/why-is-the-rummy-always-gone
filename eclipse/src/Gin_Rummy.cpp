@@ -11,6 +11,7 @@
 #include "Card.h"
 #include "Deck.h"
 #include "DiscardPile.h"
+#include "Combo.h"
 #include "Player.h"
 #include <signal.h>
 #include <ncurses.h>
@@ -37,6 +38,7 @@ Player* curPlayer;
 Deck deck;
 Card cardBack(0,0,0);
 DiscardPile discardPile;
+Combo combos[6];
 
 //display vars
 display gameDisplay;
@@ -128,6 +130,8 @@ void gameLoop(){
 			deck.shuffle();
 			discardPile.initialize();
 			//TODO player1.setName(playerName);
+			//TODO decide first player
+			curPlayer = &player1;
 			//Deal player cards
 			for(int i=0;i<10;i++){
 				player1.addCard(deck.drawCard());
@@ -156,7 +160,7 @@ void gameLoop(){
 				selectedSlots[1] = temp;
 		}
 		//if player turn
-		//TODO if(curPlayer == &player1){
+		if(curPlayer == &player1){
 			//allow player to swap cards around
 			//if 1st selected is player card
 			if(selectedSlots[0] != NULL && (*selectedSlots[0]).type() == CardSlot::player){
@@ -168,36 +172,43 @@ void gameLoop(){
 					//TODO Card temp = player1.getCard((*selectedSlots[0]).index());
 					//TODO player1.setCard((*selectedSlots[0]).index(), index) = player1.getCard((*selectedSlots[1]).index());
 					//TODO player1.cards((*selectedSlots[1]).index()) = temp;
+
+					//or TODO player1.swapCards((*selectedSlots[0]).index(), (*selectedSlots[1]).index());
 					resetSelectedSlots();
 				}
 			}
 			//player phases
-			//TODO switch(player1.phase){
+			switch(player1.getTurnPhase()){
 				//if in draw phase
-				//TODO case(Player::draw):
+				case(Player::draw):
 					topBanner = drawMessage;
 
 					//if player click deck
 					if((selectedSlots[0] != NULL && (*selectedSlots[0]).type() == CardSlot::deck) ||
 							(selectedSlots[1] != NULL && (*selectedSlots[1]).type() == CardSlot::deck)){
-						//TODO give next deck card and go to discard phase
+						//give player a deck card and go to play phase
+						player1.addCard(deck.drawCard());
+						player1.setTurnPhase(Player::play);
 						resetSelectedSlots();
-
 					}
+
 					//if player clicks discarded card
 					if((selectedSlots[0] != NULL && (*selectedSlots[0]).type() == CardSlot::discard) ||
 							(selectedSlots[1] != NULL && (*selectedSlots[1]).type() == CardSlot::discard)){
-						//TODO give that card and go to discard phase
+						//give player a discard card and go to play phase
+						player1.addCard(discardPile.removeCard());
+						player1.setTurnPhase(Player::play);
 						resetSelectedSlots();
 					}
+				break;
 
 				//if in play phase
-				//TODO case(Player::play):
+				case(Player::play):
 					topBanner = playMessage;
 
 					//if knockKey pressed
 					if(key == knockKey.key()){
-						//TODO curPlayer.phase = knock;
+						player1.setTurnPhase(Player::knock);
 					}
 					if(selectedSlots[0] != NULL){
 						//if player card is 1st selected selected
@@ -216,9 +227,10 @@ void gameLoop(){
 							//reset selected
 							resetSelectedSlots();
 					}
+				break;
 
 				//if knock phase
-				//TODO case(Player::knock):
+				case(Player::knock):
 					topBanner = knockMessage;
 
 					if(selectedSlots[0] != NULL){
@@ -255,46 +267,49 @@ void gameLoop(){
 						//TODO remove cards from any combos to curPlayers cards
 						//TODO go to play phase
 					}
+				break;
 
 				//if last turn phase
-				//TODO case(Player::not_knocker):
-					topBanner = knockMessage;
-
-					if(selectedSlots[0] != NULL){
-						//if player card is 1st selected selected
-						if((*selectedSlots[0]).type() == CardSlot::player){
-							(*selectedSlots[0]).setHighlight(true);
-							//if 2nd selected is combo
-							if((*selectedSlots[1]).type() == CardSlot::combo){
-								//TODO try to move this card into this combo
-								//TODO if combo ok
-									//TODO bottomBanner = combos[(*selectedSlots[1]).index()].toString();
-								//TODO else
-									bottomBanner = dontComboMessage;
-								resetSelectedSlots();
-							}
-						}
-						//if not player card as 1st selected
-						else
-							//reset selected
-							resetSelectedSlots();
-					}
-					//if submit key pressed
-					if(key == submitKey.key()){
-						//TODO go to end game
-					}
-					//if cancelKey pressed
-					if(key == cancelKey.key()){
-						//TODO remove cards from any combos to curPlayers cards
-					}
-			//TODO end case
+				case(Player::not_knocker):
+//					topBanner = knockMessage;
+//
+//					if(selectedSlots[0] != NULL){
+//						//if player card is 1st selected selected
+//						if((*selectedSlots[0]).type() == CardSlot::player){
+//							(*selectedSlots[0]).setHighlight(true);
+//							//if 2nd selected is combo
+//							if((*selectedSlots[1]).type() == CardSlot::combo){
+//								//TODO try to move this card into this combo
+//								//TODO if combo ok
+//									//TODO bottomBanner = combos[(*selectedSlots[1]).index()].toString();
+//								//TODO else
+//									bottomBanner = dontComboMessage;
+//								resetSelectedSlots();
+//							}
+//						}
+//						//if not player card as 1st selected
+//						else
+//							//reset selected
+//							resetSelectedSlots();
+//					}
+//					//if submit key pressed
+//					if(key == submitKey.key()){
+//						//TODO go to end game
+//					}
+//					//if cancelKey pressed
+//					if(key == cancelKey.key()){
+//						//TODO remove cards from any combos to curPlayers cards
+//					}
+				break;
+			}
+		}
 
 		//if ai turn
-		//if(curPlayer == player2){
+		else if(curPlayer == &player2){
 			topBanner = notTurnMessage;
 			//execute ai code
-		//}
-		break;
+		}
+	break;
 	}
 
 	//draw small box in a corner to get rid of the annoying cursor
@@ -331,14 +346,17 @@ void drawCards(){
 			card = &c;
 			break;
 		case (CardSlot::player):
-			c = player1.getCard(slot.index());
-			card = &c;
+			if(slot.index() < player1.handSize()){
+				c = player1.getCard(slot.index());
+				card = &c;
+			}
 			break;
 		case (CardSlot::combo):
 			//TODO if(player1.getTurnPhase() != Player::knock && player1.getTurnPhase() != Player::not_knocker)
 				display = false;
-			//TODO c = combos[slot.index()].last;
-			card = &c;
+			//TODO else
+				//TODO c = combos[slot.index()].topCard();
+				card = &c;
 			break;
 		}
 		if(display){

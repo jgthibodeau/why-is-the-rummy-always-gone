@@ -1,5 +1,6 @@
 #include "Combo.h" 
 #include "Card.h" 
+using namespace std;
 
 Combo::Combo(){  
 	isSet = false;
@@ -8,7 +9,29 @@ Combo::Combo(){
 
 void Combo::initialize(){ 
 	comboSet.clear();
-} 
+}   
+
+bool Combo::isEmpty(){ 
+	return comboSet.empty();
+}  
+
+Card Combo::showCard(){ 
+	return comboSet.back();
+}
+
+Card Combo::removeCard(){ 
+	Card topCard = comboSet.back(); //end returns a reference to the last card
+	comboSet.erase(comboSet.end()); //begin returns the interator to the first card
+	return topCard;
+}
+
+string Combo::toString(){ 
+	string output = ""; 
+	for (deque<Card>::iterator it = comboSet.begin(); it != comboSet.end(); ++it){
+		output = output + (*it).toString();
+	} 
+	return output;
+}
 
 bool Combo::addCard(Card c){  //returns true if a card is sucessefully added, returns false if card is not added
 	if (comboSet.empty()){  				// if no card in combo, put the card in

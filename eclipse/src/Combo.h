@@ -8,8 +8,12 @@ private:
 	bool isSet;
 public:
   Combo();
-  void initialize(); 
-  bool addCard(Card c);
+  void initialize();   
+  Card removeCard(); 
+  Card showCard();
+  bool isEmpty();
+  bool addCard(Card c); 
+  string toString();
   std::deque<Card> comboSet; 
 }; 
 
