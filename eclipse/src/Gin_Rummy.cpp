@@ -281,11 +281,26 @@ void gameLoop(){
 					else if(key == submitKey.key()){
 						//if deadwood ok
 						if(player1.canKnock()){
-							//go to next player
-							curPlayer = &player2;
-							//TODO player1.setActivity(false);
-							player1.setTurnPhase(Player::draw);
-							bottomBanner = "";
+							//if combos are good
+							int failedCombo = 0;
+							for(int i=0;i<6;i++){
+								if(!combos[i].isValid()){
+									failedCombo = i+1;
+									break;
+								}
+							}
+							if(failedCombo == 0){
+								//go to next player
+								curPlayer = &player2;
+								//TODO player1.setActivity(false);
+								player1.setTurnPhase(Player::draw);
+								bottomBanner = "";
+							}
+							else{
+								stringstream ss;
+								ss << "Combo " << failedCombo << " is bad!" << endl;
+								bottomBanner = ss.str();
+							}
 						}
 						else
 							bottomBanner = badDeadwoodMessage;
