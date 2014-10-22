@@ -1,33 +1,48 @@
 #include "Player.h"
 #include <string>
+#include <iostream>
 using namespace std;
 
-Player::Player(string name, int score, card[] cards, combo[] combos, int turnPhase, bool activity)
+Player::Player(string name, int score, int turnPhase, bool activity)
 {
     name = name;
     score = score;
-    cards = cards;
-    combos = combos;
     turnPhase = turnPhase;
     activity = activity;
 }
 
-public int calculateScore(){
+
+///calculates player score
+int Player::calculateScore(){
     int score = 0;
-    int i;
-    for (i=0; i<cards.length; i++){
-        score += cards[i].value;
+    for (list<Card>::iterator it = Hand.begin(); it != Hand.end(); ++it){
+        score += (*it).pointsVal;
     }
-    return score
+
+    return score;
 }
 
-
-public bool canKnock(){
+///can player knock?
+bool Player::canKnock(){
     bool knock = false;
     int deadwood = calculateScore();
     if (deadwood < 10){
         knock = true;
     }
     return knock;
+}
+
+///card to player
+void Player::addCard(Card card){
+    Hand.push_back(card);
+}
+
+void Player::removeCard(int index){
+    if (index <1 || index > Hand.size()){
+        cout << "sorry" << endl;
+        return;
     }
+    list<Card>::iterator it = Hand.begin();
+    advance(it,index-1);
+    it = Hand.erase(it);
 }
