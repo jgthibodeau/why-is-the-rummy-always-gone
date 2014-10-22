@@ -16,7 +16,7 @@ bool Combo::isEmpty(){
 }   
 
 bool Combo::isValid(){ 
-	return (comboSet.size() >= 3);
+	return (comboSet.size() >= 3 || comboSet.size() == 0);
 }
 
 Card Combo::showCard(){ 
