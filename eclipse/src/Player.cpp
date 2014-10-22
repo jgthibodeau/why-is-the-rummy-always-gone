@@ -38,14 +38,18 @@ void Player::addCard(Card card){
 }
 
 ///remove card from hand at index
-void Player::removeCard(int index){
+<<<<<<< HEAD
+Card Player::removeCard(int index){
     if (index <0 || index > Hand.size()-1){
-        //cout << "sorry" << endl;
-        return;
+        cout << "sorry" << endl;
+        Card card(0,0,0);
+        return card;
     }
     list<Card>::iterator it = Hand.begin();
     advance(it,index);
+    Card temp = *it;
     it = Hand.erase(it);
+    return temp;
 }
 
 ///returns card from hand at index without deleting
@@ -63,4 +67,15 @@ void Player::removeCard(int index){
 ///returns size of player's current hand
 int Player::handSize(){
     return Hand.size();
+}
+
+ ///swaps the cards located in two indices in player's hand
+void Player::swapCard(int index1, int index2){
+    list<Card>::iterator card1 = Hand.begin();
+    list<Card>::iterator card2 = Hand.begin();
+    advance(card1,index1);
+    advance(card2,index2);
+    Card temp = *card1;
+    *card1 = *card2;
+    *card2 = *card1;
 }
