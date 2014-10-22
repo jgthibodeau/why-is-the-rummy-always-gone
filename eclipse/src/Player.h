@@ -13,10 +13,10 @@ class Player
         string name;  ///player name
         int score, turnPhase; ///player score, turn phase
         list<Card> Hand;
-        int turnphase;
         bool active;  ///is it player's turn?
 
     public:
+        Player(){name="";score=0;turnPhase=0;active=false;}
         Player(string name, int score, int turnPhase, bool activity);
 
     ///constants for turnPhase

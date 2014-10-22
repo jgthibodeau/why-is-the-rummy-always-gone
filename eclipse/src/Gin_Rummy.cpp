@@ -173,7 +173,7 @@ void gameLoop(){
 					//TODO player1.setCard((*selectedSlots[0]).index(), index) = player1.getCard((*selectedSlots[1]).index());
 					//TODO player1.cards((*selectedSlots[1]).index()) = temp;
 
-					//or TODO player1.swapCards((*selectedSlots[0]).index(), (*selectedSlots[1]).index());
+					player1.swapCard((*selectedSlots[0]).index(), (*selectedSlots[1]).index());
 					resetSelectedSlots();
 				}
 			}

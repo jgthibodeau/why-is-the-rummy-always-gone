@@ -38,7 +38,6 @@ void Player::addCard(Card card){
 }
 
 ///remove card from hand at index
-<<<<<<< HEAD
 Card Player::removeCard(int index){
     if (index <0 || index > Hand.size()-1){
         cout << "sorry" << endl;
