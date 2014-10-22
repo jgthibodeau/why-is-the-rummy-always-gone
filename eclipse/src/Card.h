@@ -1,6 +1,8 @@
 #ifndef CARD_H
 #define CARD_H  
-//#include "Player.h"
+//#include "Player.h" 
+#include <string> 
+using namespace std;
 class Player;
 
 class Card { 
