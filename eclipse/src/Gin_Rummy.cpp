@@ -201,10 +201,14 @@ void gameLoop(){
 					//if player clicks discarded card
 					if((selectedSlots[0] != NULL && (*selectedSlots[0]).type() == CardSlot::discard) ||
 							(selectedSlots[1] != NULL && (*selectedSlots[1]).type() == CardSlot::discard)){
-						//give player a discard card and go to play phase
-						player1.addCard(discardPile.removeCard());
-						player1.setTurnPhase(Player::play);
-						resetSelectedSlots();
+						if(!discardPile.isEmpty()){
+							//give player a discard card and go to play phase
+							player1.addCard(discardPile.removeCard());
+							player1.setTurnPhase(Player::play);
+							resetSelectedSlots();
+						}
+						else
+							bottomBanner = "You can't draw from an empty discard pile, you silly!";
 					}
 				break;
 
@@ -281,11 +285,26 @@ void gameLoop(){
 					else if(key == submitKey.key()){
 						//if deadwood ok
 						if(player1.canKnock()){
-							//go to next player
-							curPlayer = &player2;
-							//TODO player1.setActivity(false);
-							player1.setTurnPhase(Player::draw);
-							bottomBanner = "";
+							//if combos are good
+							int failedCombo = 0;
+							for(int i=0;i<6;i++){
+								if(!combos[i].isValid()){
+									failedCombo = i+1;
+									break;
+								}
+							}
+							if(failedCombo == 0){
+								//go to next player
+								curPlayer = &player2;
+								//TODO player1.setActivity(false);
+								player1.setTurnPhase(Player::draw);
+								bottomBanner = "";
+							}
+							else{
+								stringstream ss;
+								ss << "Combo " << failedCombo << " is bad!" << endl;
+								bottomBanner = ss.str();
+							}
 						}
 						else
 							bottomBanner = badDeadwoodMessage;
@@ -348,6 +367,11 @@ void gameLoop(){
 		else if(curPlayer == &player2){
 			topBanner = notTurnMessage;
 			//execute ai code
+			player2.addCard(deck.drawCard());
+			Card c = player2.removeCard(0);
+			discardPile.addCard(c);
+			curPlayer = &player1;
+			player1.setTurnPhase(Player::draw);
 		}
 	break;
 	}
@@ -382,8 +406,10 @@ void drawCards(){
 			card = &cardBack;
 			break;
 		case (CardSlot::discard):
-			c = discardPile.topCard();
-			card = &c;
+			if(!discardPile.isEmpty()){
+				c = discardPile.topCard();
+				card = &c;
+			}
 			break;
 		case (CardSlot::player):
 			if(slot.index() < player1.handSize()){
