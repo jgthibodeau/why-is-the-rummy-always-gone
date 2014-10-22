@@ -11,7 +11,8 @@ private:
 public: 
 	Card(){suitVal=0;valueVal=0;pointsVal=0;}
 	Card(int cardSuit, int cardValue, int cardPoints);
-	Card(int cardSuit, int cardValue, int cardPoints, Player p); 
+	Card(int cardSuit, int cardValue, int cardPoints, Player p);  
+	string toString();
 	void makeOwner(Player play);
 	int suit(){return suitVal;}
 	int value(){return valueVal;}
