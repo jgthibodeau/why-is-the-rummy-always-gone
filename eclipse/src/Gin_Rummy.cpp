@@ -153,7 +153,8 @@ void gameLoop(){
 		//if mouseClick
 		if(key == -1){
 			//get card clicked if any
-			CardSlot *temp = findCardSlot(gameDisplay.getMouseEventX(), gameDisplay.getMouseEventY());
+			CardSlot* temp = findCardSlot(gameDisplay.getMouseEventX(), gameDisplay.getMouseEventY());
+
 			if(selectedSlots[0] == NULL)
 				selectedSlots[0] = temp;
 			else
@@ -169,10 +170,6 @@ void gameLoop(){
 				//if 2nd selected is player cards
 				if(selectedSlots[1] != NULL && (*selectedSlots[1]).type() == CardSlot::player){
 					//swap and unhighlight
-					//TODO Card temp = player1.getCard((*selectedSlots[0]).index());
-					//TODO player1.setCard((*selectedSlots[0]).index(), index) = player1.getCard((*selectedSlots[1]).index());
-					//TODO player1.cards((*selectedSlots[1]).index()) = temp;
-
 					player1.swapCard((*selectedSlots[0]).index(), (*selectedSlots[1]).index());
 					resetSelectedSlots();
 				}
@@ -210,21 +207,21 @@ void gameLoop(){
 					if(key == knockKey.key()){
 						player1.setTurnPhase(Player::knock);
 					}
-					if(selectedSlots[0] != NULL){
+
+					else if(selectedSlots[0] != NULL){
 						//if player card is 1st selected selected
 						if((*selectedSlots[0]).type() == CardSlot::player){
 							(*selectedSlots[0]).setHighlight(true);
 							//if 2nd selected is discard
-							if((*selectedSlots[1]).type() == CardSlot::discard){
+							if((selectedSlots[1] != NULL) && ((*selectedSlots[1]).type() == CardSlot::discard)){
 								//discard selected and reset
-								//TODO discardPile add selected
 								Card c = player1.removeCard((*selectedSlots[0]).index());
 								//if card was actually removed
 								if(c.isValid()){
-									discardPile.addCard(player1.removeCard((*selectedSlots[0]).index()));
-									resetSelectedSlots();
+									discardPile.addCard(c);
 									//TODO go to next player
 								}
+								resetSelectedSlots();
 							}
 						}
 						//if not player card as 1st selected
@@ -234,21 +231,35 @@ void gameLoop(){
 					}
 				break;
 
+				//TODO discard a card before knocking!
+
 				//if knock phase
 				case(Player::knock):
 					topBanner = knockMessage;
 
 					if(selectedSlots[0] != NULL){
+						//TODO if click combo, print combo cards on bottomBanner
+
 						//if player card is 1st selected selected
 						if((*selectedSlots[0]).type() == CardSlot::player){
 							(*selectedSlots[0]).setHighlight(true);
 							//if 2nd selected is combo
-							if((*selectedSlots[1]).type() == CardSlot::combo){
-								//TODO try to move this card into this combo
-								//TODO if combo ok
-									bottomBanner = "";
-								//TODO else
-									bottomBanner = dontComboMessage;
+							if((selectedSlots[1] != NULL) && ((*selectedSlots[1]).type() == CardSlot::combo)){
+								Card c = player1.removeCard((*selectedSlots[0]).index());
+								if(c.isValid()){
+									//try to move this card into this combo
+									//Combo com = combos[(*selectedSlots[1]).index()];
+									bool success = combos[(*selectedSlots[1]).index()].addCard(c);
+									if(success)
+										//if combo ok
+										bottomBanner = "comboed";
+									else{
+										player1.addCard(c);
+										bottomBanner = dontComboMessage+" "+combos[(*selectedSlots[1]).index()].toString();
+									}
+								}
+								else
+									player1.addCard(c);
 								resetSelectedSlots();
 							}
 						}
@@ -269,42 +280,45 @@ void gameLoop(){
 					}
 					//if cancelKey pressed
 					if(key == cancelKey.key()){
-						//TODO remove cards from any combos to curPlayers cards
-						//TODO go to play phase
+						//remove cards from combo
+						while(!combos[(*selectedSlots[1]).index()].isEmpty())
+							player1.addCard(combos[(*selectedSlots[1]).index()].removeCard());
+						//go to play phase
+						player1.setTurnPhase(Player::play);
 					}
 				break;
 
 				//if last turn phase
 				case(Player::not_knocker):
-//					topBanner = knockMessage;
-//
-//					if(selectedSlots[0] != NULL){
-//						//if player card is 1st selected selected
-//						if((*selectedSlots[0]).type() == CardSlot::player){
-//							(*selectedSlots[0]).setHighlight(true);
-//							//if 2nd selected is combo
-//							if((*selectedSlots[1]).type() == CardSlot::combo){
-//								//TODO try to move this card into this combo
-//								//TODO if combo ok
-//									//TODO bottomBanner = combos[(*selectedSlots[1]).index()].toString();
-//								//TODO else
-//									bottomBanner = dontComboMessage;
-//								resetSelectedSlots();
-//							}
-//						}
-//						//if not player card as 1st selected
-//						else
-//							//reset selected
-//							resetSelectedSlots();
-//					}
-//					//if submit key pressed
-//					if(key == submitKey.key()){
-//						//TODO go to end game
-//					}
-//					//if cancelKey pressed
-//					if(key == cancelKey.key()){
-//						//TODO remove cards from any combos to curPlayers cards
-//					}
+					topBanner = knockMessage;
+
+					if(selectedSlots[0] != NULL){
+						//if player card is 1st selected selected
+						if((*selectedSlots[0]).type() == CardSlot::player){
+							(*selectedSlots[0]).setHighlight(true);
+							//if 2nd selected is combo
+							if((*selectedSlots[1]).type() == CardSlot::combo){
+								//TODO try to move this card into this combo
+								//TODO if combo ok
+									//TODO bottomBanner = combos[(*selectedSlots[1]).index()].toString();
+								//TODO else
+									bottomBanner = dontComboMessage;
+								resetSelectedSlots();
+							}
+						}
+						//if not player card as 1st selected
+						else
+							//reset selected
+							resetSelectedSlots();
+					}
+					//if submit key pressed
+					if(key == submitKey.key()){
+						//TODO go to end game
+					}
+					//if cancelKey pressed
+					if(key == cancelKey.key()){
+						//TODO remove cards from any combos to curPlayers cards
+					}
 				break;
 			}
 		}
@@ -357,11 +371,13 @@ void drawCards(){
 			}
 			break;
 		case (CardSlot::combo):
-			//TODO if(player1.getTurnPhase() != Player::knock && player1.getTurnPhase() != Player::not_knocker)
+			if(player1.getTurnPhase() != Player::knock && player1.getTurnPhase() != Player::not_knocker)
 				display = false;
-			//TODO else
-				//TODO c = combos[slot.index()].topCard();
-				card = &c;
+			else
+				if(!combos[slot.index()].isEmpty()){
+					c = combos[slot.index()].showCard();
+					card = &c;
+				}
 			break;
 		}
 		if(display){
@@ -391,7 +407,7 @@ void drawBanners(){
 CardSlot *findCardSlot(int x, int y){
 	//iterate over card slots
 	int minX,minY,maxX,maxY;
-	for(int i=0;i<18;i++){
+	for(int i=0;i<NUMBERCARDSLOTS;i++){
 		minX=cardSlots[i].position().x();
 		maxX=minX+cardSlots[i].width();
 		minY=cardSlots[i].position().y();
@@ -405,21 +421,23 @@ CardSlot *findCardSlot(int x, int y){
 }
 
 void resetSelectedSlots(){
-	(*selectedSlots[0]).setHighlight(false);
-	(*selectedSlots[1]).setHighlight(false);
+	if(selectedSlots[0] != NULL)
+		(*selectedSlots[0]).setHighlight(false);
+	if(selectedSlots[1] != NULL)
+		(*selectedSlots[1]).setHighlight(false);
 	selectedSlots[0] = NULL;
 	selectedSlots[1] = NULL;
 }
 
 void resizeCardSlots(){
 	int numCols = (gameDisplay.getCols()-2)/8;
-	cardSlots[0] = CardSlot(2,2,0,0,CardSlot::deck);		//1 deck
-	cardSlots[1] = CardSlot(10,2,0,0,CardSlot::discard);	//1 discard pile
+	cardSlots[0] = CardSlot(2,7,6,5,CardSlot::deck);		//1 deck
+	cardSlots[1] = CardSlot(10,7,6,5,CardSlot::discard);	//1 discard pile
 	for(int i=0;i<11;i++){									//11 player cards
-		cardSlots[i+2] = CardSlot(2+8*(i%numCols),12+(5*(int)(i/numCols)), 6, 5, CardSlot::player, i);
+		cardSlots[2+i] = CardSlot(2+8*i,12, 6, 5, CardSlot::player, i);
 	}
 	for(int i=0;i<6;i++){									//6 combo cards
-		cardSlots[i+13] = CardSlot(2+8*(i%10),7+5*(i/10), 6, 5, CardSlot::combo, i);
+		cardSlots[13+i] = CardSlot(18+8*i,7, 6, 5, CardSlot::combo, i);
 	}
 }
 

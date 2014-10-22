@@ -21,6 +21,6 @@ public:
 	int value(){return valueVal;}
 	int points(){return pointsVal;} 
 	Player* whoOwns(){return owner;}
-	bool isValid(){return (suitVal==0) || (valueVal==0);}
+	bool isValid(){return (suitVal!=0) && (valueVal!=0);}
 };
 #endif
