@@ -13,7 +13,11 @@ void Combo::initialize(){
 
 bool Combo::isEmpty(){ 
 	return comboSet.empty();
-}  
+}   
+
+bool Combo::isValid(){ 
+	return (comboSet.size() >= 3);
+}
 
 Card Combo::showCard(){ 
 	return comboSet.back();

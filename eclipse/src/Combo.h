@@ -9,8 +9,9 @@ private:
 public:
   Combo();
   void initialize();   
-  Card removeCard(); 
-  Card showCard();
+  Card removeCard();  
+  Card showCard(); 
+  bool isValid();
   bool isEmpty();
   bool addCard(Card c); 
   string toString();
