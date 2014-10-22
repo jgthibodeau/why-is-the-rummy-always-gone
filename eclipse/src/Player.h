@@ -6,7 +6,6 @@
 #include "Card.h"
 using namespace std;
 //class Card;
->>>>>>> origin/master
 
 class Player
 {

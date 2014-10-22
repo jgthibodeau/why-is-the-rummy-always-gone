@@ -1,11 +1,13 @@
-#include "Card.h"  
-using namespace std; 
+#include "Card.h"
 #include <string>
+#include <sstream>
+using namespace std; 
 
  Card::Card(int cardSuit, int cardValue, int cardPoints){
  	suitVal = cardSuit;
  	valueVal = cardValue;
  	pointsVal = cardPoints;
+ 	owner = NULL;
  }
  Card::Card(int cardSuit, int cardValue, int cardPoints, Player* p){
  	suitVal = cardSuit;
@@ -34,7 +36,9 @@ string Card::toString(){
 			out= out +"[Ace of "; 
 			break; 
 		default: 
-			out= out + "[" +to_string(valueVal)+ " of "; 
+			std::stringstream ss;
+			ss << valueVal;
+			out= out + "[" +ss.str()+ " of ";
 			break;
 	} 
 	switch(suitVal){ 
