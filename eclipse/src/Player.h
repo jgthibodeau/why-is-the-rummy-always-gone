@@ -5,18 +5,21 @@
 #include <list>
 #include "Card.h"
 using namespace std;
+//class Card;
+>>>>>>> origin/master
 
 class Player
 {
     private:
         string name;  ///player name
         int score, turnPhase; ///player score, turn phase
-        list<Card> Hand;
-        int turnphase;
         bool active;  ///is it player's turn?
+        list<Card> Hand;
 
     public:
-        Player(string name, int score, int turnPhase, bool activity);
+        Player(){name="";score=0;turnPhase=0;active=false;}
+        Player(string name, int score, int turnPhase, bool active);
+
 
     ///constants for turnPhase
     static const int draw = 0;

@@ -5,10 +5,10 @@ using namespace std;
 
 Player::Player(string name, int score, int turnPhase, bool activity)
 {
-    name = name;
-    score = score;
-    turnPhase = turnPhase;
-    activity = activity;
+    name = n;
+    score = s;
+    turnPhase = t;
+    active = a;
 }
 
 
@@ -40,7 +40,7 @@ void Player::addCard(Card card){
 ///remove card from hand at index
 void Player::removeCard(int index){
     if (index <1 || index > Hand.size()){
-        cout << "sorry" << endl;
+        //cout << "sorry" << endl;
         return;
     }
     list<Card>::iterator it = Hand.begin();
@@ -51,7 +51,7 @@ void Player::removeCard(int index){
 ///returns card from hand at index without deleting
  Card Player::getCard(int index){
     if (index <1 || index > Hand.size()){
-        cout << "sorry" << endl;
+        //cout << "sorry" << endl;
     }
     list<Card>::iterator it = Hand.begin();
     advance(it,index-1);
