@@ -5,21 +5,18 @@
 #include <list>
 #include "Card.h"
 using namespace std;
-//class Card;
->>>>>>> origin/master
 
 class Player
 {
     private:
         string name;  ///player name
         int score, turnPhase; ///player score, turn phase
-        bool active;  ///is it player's turn?
         list<Card> Hand;
+        int turnphase;
+        bool active;  ///is it player's turn?
 
     public:
-        Player(){name="";score=0;turnPhase=0;active=false;}
-        Player(string name, int score, int turnPhase, bool active);
-
+        Player(string name, int score, int turnPhase, bool activity);
 
     ///constants for turnPhase
     static const int draw = 0;
@@ -40,7 +37,7 @@ class Player
     void addCard(Card card);
 
     ///remove Card from hand at index
-    void removeCard(int index);
+    Card removeCard(int index);
 
     ///returns Card from hand at index without deleting
     Card getCard(int index);
@@ -54,6 +51,8 @@ class Player
     ///returns the number of cards in the player's current hand
     int handSize();
 
+    ///swaps two cards
+    void swapCard(int index1, int index2);
 
 
 };
