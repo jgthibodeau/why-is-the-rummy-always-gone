@@ -52,5 +52,6 @@ string Card::toString(){
 			break; 
 		default: 
 			break;
-	}
+	} 
+	return out;
 }
