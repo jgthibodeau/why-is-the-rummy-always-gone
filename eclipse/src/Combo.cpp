@@ -1,5 +1,6 @@
 #include "Combo.h" 
 #include "Card.h" 
+using namespace std;
 
 Combo::Combo(){  
 	isSet = false;
@@ -8,7 +9,15 @@ Combo::Combo(){
 
 void Combo::initialize(){ 
 	comboSet.clear();
-} 
+}  
+
+string Combo::toString(){ 
+	string output = "";
+	for (auto i = comboSet.begin(); i != comboSet.end(); ++i){ 
+		output = output + comboSet.at(i).toString();
+	} 
+	return output;
+}
 
 bool Combo::addCard(Card c){  //returns true if a card is sucessefully added, returns false if card is not added
 	if (comboSet.empty()){  				// if no card in combo, put the card in

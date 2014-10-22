@@ -10,7 +10,7 @@ public:
   Combo();
   void initialize(); 
   bool addCard(Card c); 
-  void toString();
+  string toString();
   std::deque<Card> comboSet; 
 }; 
 
