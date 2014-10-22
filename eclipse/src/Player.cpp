@@ -3,7 +3,7 @@
 #include <iostream>
 using namespace std;
 
-Player::Player(string name, int score, int turnPhase, bool activity)
+Player::Player(string n, int s, int t, bool a)
 {
     name = name;
     score = score;

@@ -1,10 +1,11 @@
 #ifndef PLAYER_H
 #define PLAYER_H
 
+#include "Card.h"
 #include <string>
 #include <list>
-#include "Card.h"
 using namespace std;
+class Card;
 
 class Player
 {
@@ -12,10 +13,14 @@ class Player
         string name;  ///player name
         int score, turnPhase; ///player score, turn phase
         list<Card> Hand;
+<<<<<<< HEAD
         int turnphase;
+=======
+>>>>>>> origin/master
         bool active;  ///is it player's turn?
 
     public:
+        Player(){name="";score=0;turnPhase=0;active=false;}
         Player(string name, int score, int turnPhase, bool activity);
 
     ///constants for turnPhase

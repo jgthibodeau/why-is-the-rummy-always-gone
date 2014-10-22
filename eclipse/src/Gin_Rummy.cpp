@@ -11,6 +11,7 @@
 #include "Card.h"
 #include "Deck.h"
 #include "DiscardPile.h"
+#include "Player.h"
 #include <signal.h>
 #include <ncurses.h>
 #include <math.h>
@@ -30,7 +31,8 @@ int GAME_STATE = OUT_GAME;
 string playerName="";
 
 //game vars
-//Player player1, player2, curPlayer;
+Player player1, player2;
+Player* curPlayer;
 Deck deck;
 Card cardBack(0,0,0);
 DiscardPile discardPile;
@@ -60,8 +62,6 @@ string topBanner,bottomBanner;
 
 // Signal Subroutine for Window Resize
 static void detectResize (int sig);
-// stub artifact for what the game does when the screen resizes
-void stub_PrintResize(void);
 //main game loop
 void gameLoop();
 //main draw method
@@ -77,11 +77,6 @@ void resetSelectedSlots();
 //reset cardSlot positions based on window size
 void resizeCardSlots();
 
-//new Card(rand()%4+1,rand()%13+1,0)
-
-/*
-* This is the main function that starts the driver artifact.
-*/
 int main(int argc, char* argv[])
 {
 	//initialize cardSlots for display
@@ -140,6 +135,7 @@ void gameLoop(){
 			}
 			discardPile.addCard(deck.drawCard());
 		}
+
 		//if delete key pressed
 		else if((key == 7 || key == 74) && playerName.size() > 0)
 			playerName.erase (playerName.end() - 1);
@@ -168,7 +164,7 @@ void gameLoop(){
 				if(selectedSlots[1] != NULL && (*selectedSlots[1]).type() == CardSlot::player){
 					//swap and unhighlight
 					//TODO Card temp = curPlayer.cards[(*selectedSlots[0]).index()];
-					//TODO curPlayer.cards[(*selectedSlots[0]).index()] = curPlayer.cards[(*selectedSlots[1]).index()]
+					//TODO curPlayer.setCard[(*selectedSlots[0]).index(), index] = curPlayer.cards[(*selectedSlots[1]).index()]
 					//TODO curPlayer.cards[(*selectedSlots[1]).index()] = temp;
 					resetSelectedSlots();
 				}
@@ -317,19 +313,20 @@ void drawCards(){
 	for(int i=0;i<NUMBERCARDSLOTS;i++){
 		//draw highlight
 		if(cardSlots[i].highlighted())
-			gameDisplay.drawBox(cardSlots[i].position().x()-1, cardSlots[i].position().y()-1,
-					cardSlots[i].width()+2,cardSlots[i].height()+2,0);
+			gameDisplay.drawBox(cardSlots[i].position().x()-1, cardSlots[i].position().y()-1, cardSlots[i].width()+2,cardSlots[i].height()+2,0);
 
 		//draw cards
 		CardSlot slot = cardSlots[i];
 		Card* card = NULL;
+		Card c;
 		bool display = true;
 		switch (slot.type()){
 		case (CardSlot::deck):
 			card = &cardBack;
 			break;
 		case (CardSlot::discard):
-			//*card = discardPile.topCard();
+			c = discardPile.topCard();
+			card = &c;
 			break;
 		case (CardSlot::player):
 			//TODO card = player1.cards[slot.index()];
@@ -344,7 +341,7 @@ void drawCards(){
 			if(card == NULL)
 				gameDisplay.drawBox(cardSlots[i].position().x(),cardSlots[i].position().y(),6,5,0);
 			else
-				gameDisplay.displayCard(cardSlots[i].position().x(),cardSlots[i].position().y(),card->suit(),card->value(),0);
+				gameDisplay.displayCard(cardSlots[i].position().x(),cardSlots[i].position().y(),(*card).suit(),(*card).value(),0);
 		}
 	}
 }
@@ -399,10 +396,6 @@ void resizeCardSlots(){
 	}
 }
 
-/*
- * This is the interrupt service routine called when the resize screen
- * signal is captured.
- */
 void detectResize(int sig) {
 	// update the display class information with the new window size
     gameDisplay.handleResize(sig);
@@ -411,19 +404,4 @@ void detectResize(int sig) {
 
     //resize positions for cardSlots
     resizeCardSlots();
-}
-
-/*
- * This is a simple stub that should be replaced with what the game does
- * when the screen resizes.
- */
-void stub_PrintResize(void) {
-	// gets the new screen size
-	int cols = gameDisplay.getCols();
-	int lines = gameDisplay.getLines();
-	// setups a message stream
-	stringstream messageString;
-	messageString << "Terminal is " << cols << "x" << lines;
-	// prints out the information of the new screen size in a top banner
-	gameDisplay.bannerTop(messageString.str());
 }
