@@ -16,7 +16,7 @@ Player::Player(string name, int score, int turnPhase, bool activity)
 int Player::calculateScore(){
     int score = 0;
     for (list<Card>::iterator it = Hand.begin(); it != Hand.end(); ++it){
-        score += (*it).pointsVal;
+        score += (*it).points();
     }
 
     return score;
@@ -45,4 +45,13 @@ void Player::removeCard(int index){
     list<Card>::iterator it = Hand.begin();
     advance(it,index-1);
     it = Hand.erase(it);
+}
+
+ Card Player::getCard(int index){
+    if (index <1 || index > Hand.size()){
+        cout << "sorry" << endl;
+    }
+    list<Card>::iterator it = Hand.begin();
+    advance(it,index-1);
+    return *it;
 }

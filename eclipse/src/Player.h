@@ -12,7 +12,6 @@ class Player
         string name;  ///player name
         int score, turnPhase; ///player score, turn phase
         list<Card> Hand;
-        //Card* cards[]; ///player's cards
         int turnphase;
         bool active;  ///is it player's turn?
 
@@ -29,14 +28,15 @@ class Player
     int getScore() {return score;}
     void setScore(int newScore) {score = newScore;}
 
-    ///set and get turn
+    ///set and get turn information
     int getTurnPhase() {return turnPhase;}
     void setTurnPhase(int newPhase) {turnPhase = newPhase;}
     void setActivity(bool activity) {active = activity;}
 
-
+    ///card operations
     void addCard(Card card);
     void removeCard(int index);
+    Card getCard(int index);
     int calculateScore();
     bool canKnock();
 
