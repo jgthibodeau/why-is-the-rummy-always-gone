@@ -5,10 +5,10 @@ using namespace std;
 
 Player::Player(string n, int s, int t, bool a)
 {
-    name = name;
-    score = score;
-    turnPhase = turnPhase;
-    activity = activity;
+    name = n;
+    score = s;
+    turnPhase = t;
+    active = a;
 }
 
 
@@ -16,7 +16,7 @@ Player::Player(string n, int s, int t, bool a)
 int Player::calculateScore(){
     int score = 0;
     for (list<Card>::iterator it = Hand.begin(); it != Hand.end(); ++it){
-        score += (*it).pointsVal;
+        score += (*it).points();
     }
 
     return score;

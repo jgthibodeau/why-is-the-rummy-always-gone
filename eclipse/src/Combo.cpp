@@ -2,7 +2,7 @@
 #include "Card.h" 
 
 Combo::Combo(){  
-	isSet;
+	isSet = false;
 	initialize();
 } 
 

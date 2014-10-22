@@ -1,23 +1,23 @@
 #ifndef PLAYER_H
 #define PLAYER_H
 
-//#include "Card.h"
+#include "Card.h"
 #include <string>
 #include <list>
 using namespace std;
-class Card;
+//class Card;
 
 class Player
 {
     private:
         string name;  ///player name
         int score, turnPhase; ///player score, turn phase
-        list<Card> Hand;
         bool active;  ///is it player's turn?
+        list<Card> Hand;
 
     public:
         Player(){name="";score=0;turnPhase=0;active=false;}
-        Player(string name, int score, int turnPhase, bool activity);
+        Player(string name, int score, int turnPhase, bool active);
 
     ///constants for turnPhase
     static const int draw = 0;
