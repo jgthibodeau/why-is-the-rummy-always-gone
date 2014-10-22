@@ -11,11 +11,11 @@ void Combo::initialize(){
 	comboSet.clear();
 }  
 
-string Combo::toString(){ 
+string Combo::toString(){
 	string output = "";
-	for (auto i = comboSet.begin(); i != comboSet.end(); ++i){ 
+	for (auto i = comboSet.begin(); i != comboSet.end(); ++i){
 		output = output + comboSet.at(i).toString();
-	} 
+	}
 	return output;
 }
 

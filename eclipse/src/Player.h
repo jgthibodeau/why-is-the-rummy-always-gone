@@ -54,7 +54,6 @@ class Player
     int handSize();
 
 
-
 };
 
 #endif

@@ -37,6 +37,7 @@ Player* curPlayer;
 Deck deck;
 Card cardBack(0,0,0);
 DiscardPile discardPile;
+Combo combos[6];
 
 //display vars
 display gameDisplay;
@@ -331,14 +332,17 @@ void drawCards(){
 			card = &c;
 			break;
 		case (CardSlot::player):
-			c = player1.getCard(slot.index());
-			card = &c;
+			if(slot.index() < player1.handSize()){
+				c = player1.getCard(slot.index());
+				card = &c;
+			}
 			break;
 		case (CardSlot::combo):
 			//TODO if(player1.getTurnPhase() != Player::knock && player1.getTurnPhase() != Player::not_knocker)
 				display = false;
-			//TODO c = combos[slot.index()].last;
-			card = &c;
+			//TODO else
+				//TODO c = combos[slot.index()].topCard();
+				card = &c;
 			break;
 		}
 		if(display){
