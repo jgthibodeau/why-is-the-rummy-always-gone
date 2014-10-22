@@ -4,6 +4,15 @@
 // Version     : 1.0
 //============================================================================
 
+/*
+ * Stretch goals:
+ * 	prevent discarding card that was drawn from discard pile
+ * 	show combo cards when clicking on combo
+ *	better ai
+ *	refactor code
+ *	pull game logic code into player and etc.
+ */
+
 #include "display.h"
 #include "Key.h"
 #include "Point.h"
@@ -219,7 +228,7 @@ void gameLoop(){
 								//if card was actually removed
 								if(c.isValid()){
 									discardPile.addCard(c);
-									//TODO go to next player
+									curPlayer = &player2;
 								}
 								resetSelectedSlots();
 							}
@@ -252,7 +261,7 @@ void gameLoop(){
 									bool success = combos[(*selectedSlots[1]).index()].addCard(c);
 									if(success)
 										//if combo ok
-										bottomBanner = "comboed";
+										bottomBanner = "";
 									else{
 										player1.addCard(c);
 										bottomBanner = dontComboMessage+" "+combos[(*selectedSlots[1]).index()].toString();
@@ -269,25 +278,37 @@ void gameLoop(){
 							resetSelectedSlots();
 					}
 					//if submit key pressed
-					if(key == submitKey.key()){
+					else if(key == submitKey.key()){
 						//if deadwood ok
-						//TODO check currentplayer deadwood
-						//TODO if deadwood ok
-							//TODO go to next player, set phase to last turn
+						if(player1.canKnock()){
+							//go to next player
+							curPlayer = &player2;
+							//TODO player1.setActivity(false);
+							player1.setTurnPhase(Player::draw);
 							bottomBanner = "";
-						//TODO else
+						}
+						else
 							bottomBanner = badDeadwoodMessage;
 					}
 					//if cancelKey pressed
-					if(key == cancelKey.key()){
+					else if(key == cancelKey.key()){
 						//remove cards from combo
-						while(!combos[(*selectedSlots[1]).index()].isEmpty())
-							player1.addCard(combos[(*selectedSlots[1]).index()].removeCard());
+						for(int i=0;i<6;i++){
+							while(!combos[i].isEmpty()){
+								Card c = combos[i].removeCard();
+								player1.addCard(c);
+							}
+						}
 						//go to play phase
 						player1.setTurnPhase(Player::play);
 					}
 				break;
 
+				/*
+				 * TODO
+				 * Not important when only vs AI
+				 *
+				 */
 				//if last turn phase
 				case(Player::not_knocker):
 					topBanner = knockMessage;
@@ -431,13 +452,13 @@ void resetSelectedSlots(){
 
 void resizeCardSlots(){
 	int numCols = (gameDisplay.getCols()-2)/8;
-	cardSlots[0] = CardSlot(2,7,6,5,CardSlot::deck);		//1 deck
-	cardSlots[1] = CardSlot(10,7,6,5,CardSlot::discard);	//1 discard pile
+	cardSlots[0] = CardSlot(2,2,6,5,CardSlot::deck);		//1 deck
+	cardSlots[1] = CardSlot(10,2,6,5,CardSlot::discard);	//1 discard pile
 	for(int i=0;i<11;i++){									//11 player cards
 		cardSlots[2+i] = CardSlot(2+8*i,12, 6, 5, CardSlot::player, i);
 	}
 	for(int i=0;i<6;i++){									//6 combo cards
-		cardSlots[13+i] = CardSlot(18+8*i,7, 6, 5, CardSlot::combo, i);
+		cardSlots[13+i] = CardSlot(2+8*i,7, 6, 5, CardSlot::combo, i);
 	}
 }
 
