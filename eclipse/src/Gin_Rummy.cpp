@@ -215,11 +215,16 @@ void gameLoop(){
 						if((*selectedSlots[0]).type() == CardSlot::player){
 							(*selectedSlots[0]).setHighlight(true);
 							//if 2nd selected is discard
-							if((*selectedSlots[0]).type() == CardSlot::discard){
+							if((*selectedSlots[1]).type() == CardSlot::discard){
 								//discard selected and reset
 								//TODO discardPile add selected
-								resetSelectedSlots();
-								//TODO go to next player
+								Card c = player1.removeCard((*selectedSlots[0]).index());
+								//if card was actually removed
+								if(c.isValid()){
+									discardPile.addCard(player1.removeCard((*selectedSlots[0]).index()));
+									resetSelectedSlots();
+									//TODO go to next player
+								}
 							}
 						}
 						//if not player card as 1st selected
@@ -238,7 +243,7 @@ void gameLoop(){
 						if((*selectedSlots[0]).type() == CardSlot::player){
 							(*selectedSlots[0]).setHighlight(true);
 							//if 2nd selected is combo
-							if((*selectedSlots[0]).type() == CardSlot::combo){
+							if((*selectedSlots[1]).type() == CardSlot::combo){
 								//TODO try to move this card into this combo
 								//TODO if combo ok
 									bottomBanner = "";
