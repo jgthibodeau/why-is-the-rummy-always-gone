@@ -7,7 +7,7 @@ private:
 	int suitVal;
 	int valueVal;
 	int pointsVal; 
-	Player owner:
+	Player owner;
 public: 
 	Card(int cardSuit, int cardValue, int cardPoints, Player p); 
 	void makeOwner(Player play);
