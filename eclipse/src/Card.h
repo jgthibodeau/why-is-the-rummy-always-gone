@@ -9,6 +9,8 @@ private:
 	int pointsVal; 
 	Player owner;
 public: 
+	Card(){suitVal=0;valueVal=0;pointsVal=0;}
+	Card(int cardSuit, int cardValue, int cardPoints);
 	Card(int cardSuit, int cardValue, int cardPoints, Player p); 
 	void makeOwner(Player play);
 	int suit(){return suitVal;}
