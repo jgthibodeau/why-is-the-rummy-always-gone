@@ -201,10 +201,14 @@ void gameLoop(){
 					//if player clicks discarded card
 					if((selectedSlots[0] != NULL && (*selectedSlots[0]).type() == CardSlot::discard) ||
 							(selectedSlots[1] != NULL && (*selectedSlots[1]).type() == CardSlot::discard)){
-						//give player a discard card and go to play phase
-						player1.addCard(discardPile.removeCard());
-						player1.setTurnPhase(Player::play);
-						resetSelectedSlots();
+						if(!discardPile.isEmpty()){
+							//give player a discard card and go to play phase
+							player1.addCard(discardPile.removeCard());
+							player1.setTurnPhase(Player::play);
+							resetSelectedSlots();
+						}
+						else
+							bottomBanner = "You can't draw from an empty discard pile, you silly!";
 					}
 				break;
 
@@ -363,6 +367,11 @@ void gameLoop(){
 		else if(curPlayer == &player2){
 			topBanner = notTurnMessage;
 			//execute ai code
+			player2.addCard(deck.drawCard());
+			Card c = player2.removeCard(0);
+			discardPile.addCard(c);
+			curPlayer = &player1;
+			player1.setTurnPhase(Player::draw);
 		}
 	break;
 	}
@@ -397,8 +406,10 @@ void drawCards(){
 			card = &cardBack;
 			break;
 		case (CardSlot::discard):
-			c = discardPile.topCard();
-			card = &c;
+			if(!discardPile.isEmpty()){
+				c = discardPile.topCard();
+				card = &c;
+			}
 			break;
 		case (CardSlot::player):
 			if(slot.index() < player1.handSize()){
