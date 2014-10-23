@@ -39,6 +39,7 @@ char key;
 static const int OUT_GAME = 0;
 static const int IN_GAME = 1;
 static const int ENTER_NAME = 2;
+static const int IRWIN = 3;
 int GAME_STATE = OUT_GAME;
 string playerName="";
 
@@ -118,6 +119,8 @@ void gameLoop(){
 
 	//regular game
 	switch(GAME_STATE){
+	case IRWIN:
+	break;
 	case OUT_GAME:
 		topBanner = startMessage;
 		//if startKey pushed
@@ -140,23 +143,31 @@ void gameLoop(){
 
 		//if enter key pressed
 		if(key == '\n'){
-			GAME_STATE = IN_GAME;
-			bottomBanner = "";
-			//initialize stuff
-			deck.initialize();
-			deck.shuffle();
-			discardPile.initialize();
-			player1.setName(playerName);
-			//TODO decide first player
-			curPlayer = &player1;
-			//Deal player cards
-			for(int i=0;i<10;i++){
-				player1.addCard(deck.drawCard());
+			if(playerName == "davidirwin" ||
+					playerName == "DavidIrwin"){
+				GAME_STATE = IRWIN;
+				cout << "Welcome home David... We've been expecting you..." << endl;
+				system("python -mwebbrowser http://www.ecs.umass.edu/~irwin/irwin2.jpg");
 			}
-			for(int i=0;i<10;i++){
-				player2.addCard(deck.drawCard());
+			else{
+				GAME_STATE = IN_GAME;
+				bottomBanner = "";
+				//initialize stuff
+				deck.initialize();
+				deck.shuffle();
+				discardPile.initialize();
+				player1.setName(playerName);
+				//TODO decide first player
+				curPlayer = &player1;
+				//Deal player cards
+				for(int i=0;i<10;i++){
+					player1.addCard(deck.drawCard());
+				}
+				for(int i=0;i<10;i++){
+					player2.addCard(deck.drawCard());
+				}
+				discardPile.addCard(deck.drawCard());
 			}
-			discardPile.addCard(deck.drawCard());
 		}
 
 		//if delete key pressed
@@ -167,8 +178,8 @@ void gameLoop(){
 			playerName = playerName + key;
 		break;
 	case IN_GAME:
-		//if mouseClick
-		if(key == -1){
+		//if mouseClick, 1 and 4 are click and release (removes issues from holding then releasing)
+		if(key == -1 && (gameDisplay.getMouseEventButton() == 1 || gameDisplay.getMouseEventButton() == 4)){
 			//get card clicked if any
 			CardSlot* temp = findCardSlot(gameDisplay.getMouseEventX(), gameDisplay.getMouseEventY());
 
