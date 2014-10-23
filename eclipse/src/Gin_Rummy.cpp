@@ -11,6 +11,8 @@
  *	better ai
  *	refactor code
  *	pull game logic code into player and etc.
+ *	make sure deck has cards
+ *	click and drag to insert player cards on ui
  */
 
 #include "display.h"
@@ -275,39 +277,44 @@ void gameLoop(){
 									player1.addCard(c);
 								resetSelectedSlots();
 							}
+							//if 2nd selected is discard
+							if((selectedSlots[1] != NULL) && ((*selectedSlots[1]).type() == CardSlot::discard)){
+
+								//if combos are good
+								int failedCombo = 0;
+								for(int i=0;i<6;i++){
+									if(!combos[i].isValid()){
+										failedCombo = i+1;
+										break;
+									}
+								}
+								if(failedCombo == 0){
+									//if deadwood ok
+									Card c = player1.removeCard((*selectedSlots[0]).index());
+									if(player1.canKnock()){
+										//TODO SUCCESSFUL KNOCK
+										discardPile.addCard(c);
+										//go to next player
+										curPlayer = &player2;
+										//TODO player1.setActivity(false);
+										bottomBanner = "";
+									}
+									else{
+										player1.addCard(c);
+										bottomBanner = badDeadwoodMessage;
+									}
+								}
+								else{
+									stringstream ss;
+									ss << "Combo " << failedCombo << " is bad!" << endl;
+									bottomBanner = ss.str();
+								}
+							}
 						}
 						//if not player card as 1st selected
 						else
 							//reset selected
 							resetSelectedSlots();
-					}
-					//if submit key pressed
-					else if(key == submitKey.key()){
-						//if deadwood ok
-						if(player1.canKnock()){
-							//if combos are good
-							int failedCombo = 0;
-							for(int i=0;i<6;i++){
-								if(!combos[i].isValid()){
-									failedCombo = i+1;
-									break;
-								}
-							}
-							if(failedCombo == 0){
-								//go to next player
-								curPlayer = &player2;
-								//TODO player1.setActivity(false);
-								player1.setTurnPhase(Player::draw);
-								bottomBanner = "";
-							}
-							else{
-								stringstream ss;
-								ss << "Combo " << failedCombo << " is bad!" << endl;
-								bottomBanner = ss.str();
-							}
-						}
-						else
-							bottomBanner = badDeadwoodMessage;
 					}
 					//if cancelKey pressed
 					else if(key == cancelKey.key()){

@@ -33,6 +33,9 @@ class Player
     void setTurnPhase(int newPhase) {turnPhase = newPhase;}
     void setActivity(bool activity) {active = activity;}
 
+    ///set name
+    void setName(string "newName") {name = newName;}
+    string getName() {return name;}
     ///add Card to hand
     void addCard(Card card);
 
