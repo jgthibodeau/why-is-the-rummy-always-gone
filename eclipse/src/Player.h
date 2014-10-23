@@ -34,7 +34,7 @@ class Player
     void setActivity(bool activity) {active = activity;}
 
     ///set name
-    void setName(string "newName") {name = newName;}
+    void setName(string newName) {name = newName;}
     string getName() {return name;}
     ///add Card to hand
     void addCard(Card card);
