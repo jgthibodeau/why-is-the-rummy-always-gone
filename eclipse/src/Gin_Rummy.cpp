@@ -125,6 +125,12 @@ void gameLoop(){
 			//go to ENTER_NAME state
 			GAME_STATE = ENTER_NAME;
 		}
+		//testing how mouse clicks fire events
+//		if(key == -1){
+//			stringstream ss;
+//			ss << gameDisplay.getMouseEventButton();
+//			bottomBanner = ss.str();
+//		}
 		break;
 	case ENTER_NAME:
 		//write startMessage
@@ -140,7 +146,7 @@ void gameLoop(){
 			deck.initialize();
 			deck.shuffle();
 			discardPile.initialize();
-			//TODO player1.setName(playerName);
+			player1.setName(playerName);
 			//TODO decide first player
 			curPlayer = &player1;
 			//Deal player cards
@@ -171,8 +177,11 @@ void gameLoop(){
 			else
 				selectedSlots[1] = temp;
 		}
+		if(deck.isEmpty()){
+			bottomBanner = "The deck has run out of cards, oh noes!";
+		}
 		//if player turn
-		if(curPlayer == &player1){
+		else if(curPlayer == &player1){
 			//allow player to swap cards around
 			//if 1st selected is player card
 			if(selectedSlots[0] != NULL && (*selectedSlots[0]).type() == CardSlot::player){
@@ -246,8 +255,6 @@ void gameLoop(){
 					}
 				break;
 
-				//TODO discard a card before knocking!
-
 				//if knock phase
 				case(Player::knock):
 					topBanner = knockMessage;
@@ -295,9 +302,9 @@ void gameLoop(){
 										//TODO SUCCESSFUL KNOCK
 										discardPile.addCard(c);
 										//go to next player
-										curPlayer = &player2;
+										//curPlayer = &player2;
 										//TODO player1.setActivity(false);
-										bottomBanner = "";
+										bottomBanner = "A winner is you!";
 									}
 									else{
 										player1.addCard(c);
@@ -309,6 +316,7 @@ void gameLoop(){
 									ss << "Combo " << failedCombo << " is bad!" << endl;
 									bottomBanner = ss.str();
 								}
+								resetSelectedSlots();
 							}
 						}
 						//if not player card as 1st selected
@@ -382,9 +390,6 @@ void gameLoop(){
 		}
 	break;
 	}
-
-	//draw small box in a corner to get rid of the annoying cursor
-	//gameDisplay.drawBox(0,1,1,1,0);
 }
 
 void draw(){
