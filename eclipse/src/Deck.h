@@ -8,6 +8,7 @@ public:
   Deck();
   void initialize();
   void shuffle(); 
+  bool isEmpty();
   Card drawCard();
   std::vector<Card> cardDeck;
 };
