@@ -27,6 +27,10 @@ void Deck::shuffle(){
 	std::random_shuffle(cardDeck.begin(),cardDeck.end());
 } 
 
+bool Deck::isEmpty(){ 
+	return cardDeck.empty();
+}
+
 Card Deck::drawCard(){ 
 	Card topCard = cardDeck.front(); //front returns a reference to the first card
 	cardDeck.erase(cardDeck.begin()); //begin returns the interator to the first card
