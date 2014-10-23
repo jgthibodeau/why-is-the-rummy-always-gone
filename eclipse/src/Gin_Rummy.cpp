@@ -271,10 +271,14 @@ void gameLoop(){
 					topBanner = knockMessage;
 
 					if(selectedSlots[0] != NULL){
-						//TODO if click combo, print combo cards on bottomBanner
+						//if click combo, print combo cards on bottomBanner
+						if((*selectedSlots[0]).type() == CardSlot::combo){
+							bottomBanner = combos[(*selectedSlots[0]).index()].toString();
+							resetSelectedSlots();
+						}
 
 						//if player card is 1st selected selected
-						if((*selectedSlots[0]).type() == CardSlot::player){
+						else if((*selectedSlots[0]).type() == CardSlot::player){
 							(*selectedSlots[0]).setHighlight(true);
 							//if 2nd selected is combo
 							if((selectedSlots[1] != NULL) && ((*selectedSlots[1]).type() == CardSlot::combo)){
@@ -285,7 +289,7 @@ void gameLoop(){
 									bool success = combos[(*selectedSlots[1]).index()].addCard(c);
 									if(success)
 										//if combo ok
-										bottomBanner = "";
+										bottomBanner = combos[(*selectedSlots[1]).index()].toString();
 									else{
 										player1.addCard(c);
 										bottomBanner = dontComboMessage+" "+combos[(*selectedSlots[1]).index()].toString();
