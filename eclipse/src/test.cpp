@@ -193,16 +193,16 @@ int main(int argc, char* argv[]){
     cout << "player.canKnock() returned " << test_bool << ", expecting 0" << endl;
 
 /**************
-* Zach's tests
+* Zack's tests
 */
     Card c1(1,2,2); //testing card 1
     Card c2(1,3,3); //testing card 2
     Card c3(1,4,4); //testing card 3
     Card c4(2,1,1); //testing card 4
     Combo comb; //testing combo
-    DiscardPile discardP; //testing discard pile
+    DiscardPile discardP; //testing discard pile 
+    Deck deck; //testing deck
 
-    //TESTING COMBO METHODS
     bool isEmptyBefore = comb.isEmpty();
     bool isDiscardEmpty = discardP.isEmpty();
     bool addCardResult1 = comb.addCard(c2);
@@ -211,10 +211,15 @@ int main(int argc, char* argv[]){
     bool addCardResult4 = comb.addCard(c4);
     discardP.addCard(c4);
     bool isDiscardEmptyAfterAdd = discardP.isEmpty();
-    //discardP.removeCard();
-    //bool isDiscardEmptyAfterRM = discardP.isEmpty();
+    discardP.removeCard();
+    bool isDiscardEmptyAfterRM = discardP.isEmpty();
     bool isEmptyAfter = comb.isEmpty();
-    bool comboValid = comb.isValid();
+    bool comboValid = comb.isValid(); 
+    bool emptyStartDeck = deck.isEmpty(); 
+    deck.shuffle(); 
+    Card shufCard1 = deck.drawCard(); 
+    Card shufCard2 = deck.drawCard(); 
+    Card shufCard3 = deck.drawCard();
     cout << "COMBO TESTS" << endl;
     if(isEmptyBefore && !isEmptyAfter){
     	cout << "[PASSED] CHECKING EMPTY STATUS" << endl;
@@ -262,13 +267,26 @@ int main(int argc, char* argv[]){
     else{
     	cout << "[FAILED] ADDING CARD TO DISCARD PILE" << endl;
     }
-    if(true){
+    if(isDiscardEmptyAfterRM){
     	cout << "[PASSED] REMOVING CARD FROM DISCARD PILE" << endl;
     }
     else{
     	cout << "[FAILED] REMOVING CARD FROM DISCARD PILE" << endl;
-    }
+    } 
 
+    cout << "DECK TESTS" << endl; 
+    if(!emptyStartDeck){ 
+        cout << "[PASSED] CHECKING THAT START DECK ISN'T EMPTY" << endl;
+    } 
+    else{ 
+        cout << "[PASSED] CHECKING THAT START DECK ISN'T EMPTY" << endl;
+    } 
+    if((shufCard3.suit()!=shufCard2.suit()!=shufCard1.suit()) && (shufCard3().value()!= (shufCard2.value()-1 && shufCard1.value()-2))){ 
+        cout << "[PASSED] SHUFFLED CARDS" << endl;
+    }
+    else{ 
+        cout << "[PASSED] SHUFFLED CARDS" << endl;
+    }
 	return 0;
 }
 
