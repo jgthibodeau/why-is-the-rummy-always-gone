@@ -7,11 +7,9 @@
 /*
  * Stretch goals:
  * 	prevent discarding card that was drawn from discard pile
- * 	show combo cards when clicking on combo
  *	better ai
  *	refactor code
  *	pull game logic code into player and etc.
- *	make sure deck has cards
  *	click and drag to insert player cards on ui
  */
 
@@ -152,6 +150,7 @@ void gameLoop(){
 			else{
 				GAME_STATE = IN_GAME;
 				bottomBanner = "";
+				//TODO convert to initialize method
 				//initialize stuff
 				deck.initialize();
 				deck.shuffle();
@@ -159,7 +158,7 @@ void gameLoop(){
 				player1.setName(playerName);
 				//TODO decide first player
 				curPlayer = &player1;
-				//Deal player cards
+				//Deal player cards TODO convert to player.draw(deck) method
 				for(int i=0;i<10;i++){
 					player1.addCard(deck.drawCard());
 				}
@@ -188,6 +187,7 @@ void gameLoop(){
 			else
 				selectedSlots[1] = temp;
 		}
+		//TODO convert to checkEndDeck() method
 		if(deck.isEmpty()){
 			bottomBanner = "The deck has run out of cards, oh noes!";
 		}

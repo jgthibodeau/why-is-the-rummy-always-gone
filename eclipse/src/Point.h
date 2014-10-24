@@ -15,13 +15,6 @@ public:
 	// set point
 	void setPoint(double x, double y){ xval=x;yval=y; }
 
-	// Distance to another point
-	double dist(Point other);
-
-	// Add or subtract two points.
-	Point add(Point b);
-	Point sub(Point b);
-
 	// Move the existing point.
 	void move(double a, double b);
 };
