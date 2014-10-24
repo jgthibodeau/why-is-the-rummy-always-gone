@@ -66,9 +66,9 @@ CardSlot cardSlots[NUMBERCARDSLOTS];	//1 deck, 1 discard pile, 6 combo piles, 10
 CardSlot *selectedSlots[2];				//used for selecting specific cards
 //banner messages to display controls and info
 string startMessage = "Gin Rummy - "+startKey.toString()+"\t"+quitKey.toString();
-string drawMessage = "Gin Rummy - Your Turn - Draw - "+quitKey.toString();
-string playMessage = "Gin Rummy - Your Turn - "+knockKey.toString()+"\t"+quitKey.toString();
-string knockMessage = "Gin Rummy - Your Turn - Knock - "+submitKey.toString()+"\t"+cancelKey.toString()+"\t"+quitKey.toString();
+string drawMessage = "Gin Rummy - Click Deck or Discard Pile to Draw - "+quitKey.toString();
+string playMessage = "Gin Rummy - Click a Card then Discard Pile to Discard - "+knockKey.toString()+" - "+quitKey.toString();
+string knockMessage = "Gin Rummy - Click a Card then a Combo Slot to Play it - Click a Card then Discard Pile to Knock - "+cancelKey.toString()+" - "+quitKey.toString();
 string notTurnMessage = "Gin Rummy - Opponent's Turn - "+quitKey.toString();
 string nameMessage = "Enter your name: ";
 string dontComboMessage = "Those cards don't combo!";
