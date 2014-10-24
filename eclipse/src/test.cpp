@@ -294,13 +294,13 @@ int main(int argc, char* argv[]){
         cout << "[FAILED]" << endl;
     }  
     cout << "deck.isEmpty() returned " << emptyStartDeck <<", expecting 0" << endl;
-    if((shufCard3.suit()!=shufCard2.suit()!=shufCard1.suit()) && ((shufCard3.value()!= shufCard2.value()-1) && (shufCard3.value() != shufCard1.value()-2))){ 
+    if(((shufCard3.value()!= shufCard2.value()-1) && (shufCard3.value() != shufCard1.value()-2))){ 
         cout << "[PASSED]" << endl;
     }
     else{ 
         cout << "[FAILED]" << endl;
     } 
-    cout << "cards shuffled? returned " <<((shufCard3.suit()!=shufCard2.suit()!=shufCard1.suit()) && ((shufCard3.value()!= shufCard2.value()-1) && (shufCard3.value() != shufCard1.value()-2))) <<", expecting 1" << endl;
+    cout << "cards shuffled? returned " <<(((shufCard3.value()!= shufCard2.value()-1) && (shufCard3.value() != shufCard1.value()-2))) <<", expecting 1" << endl;
 	return 0;
 }
 
