@@ -248,7 +248,7 @@ int main(int argc, char* argv[]){
     else{
     	cout << "[FAILED]" << endl;
     } 
-    cout << "Adding 4 cards returned " << (addCardResult1 && addCardResult2 && addCardResult3 && !addCardResult4) <<", expecting 1"
+    cout << "Adding 4 cards returned " << (addCardResult1 && addCardResult2 && addCardResult3 && !addCardResult4) <<", expecting 1";
     if(comb.toString() == "[2 of Spades][3 of Spades][4 of Spades]"){
     	cout << "[PASSED]" << endl;
     }
