@@ -222,71 +222,85 @@ int main(int argc, char* argv[]){
     Card shufCard3 = deck.drawCard();
     cout << "COMBO TESTS" << endl;
     if(isEmptyBefore && !isEmptyAfter){
-    	cout << "[PASSED] CHECKING EMPTY STATUS" << endl;
+    	cout << "[PASSED]"<< endl;
     }
     else{
-    	cout << "[FAILED] CHECKING EMPTY STATUS" << endl;
+    	cout << "[FAILED]" << endl;
+    } 
+    cout << "combo.isEmpty() returned " << isEmptyBefore <<", expecting 1" << endl;
+    if(!isEmptyAfter){
+        cout << "[PASSED]"<< endl;
     }
+    else{
+        cout << "[FAILED]" << endl;
+    } 
+    cout << "combo.isEmpty() returned " << isEmptyBefore <<", expecting 0" << endl;
     if(comboValid){
-    	cout << "[PASSED] CHECKING VALID COMBO" << endl;
+    	cout << "[PASSED]"<< endl;
     }
     else{
-    	cout << "[FAILED] CHECKING VALID COMBO" << endl;
-    }
+    	cout << "[FAILED]" << endl; 
+    } 
+    cout << "combo.isValid() returned " << comboValid <<", expecting 1" << endl; 
     if(addCardResult1 && addCardResult2 && addCardResult3 && !addCardResult4){
-    	cout << "[PASSED] ADDING CARD TO COMBOS" << endl;
+    	cout << "[PASSED]" << endl;
     }
     else{
-    	cout << "[FAILED] ADDING CARD TO COMBOS" << endl;
-    }
+    	cout << "[FAILED]" << endl;
+    } 
+    cout << "Adding 4 cards returned " << (addCardResult1 && addCardResult2 && addCardResult3 && !addCardResult4) <<", expecting 1"
     if(comb.toString() == "[2 of Spades][3 of Spades][4 of Spades]"){
-    	cout << "[PASSED] COMBO TO STRING" << endl;
+    	cout << "[PASSED]" << endl;
     }
     else{
-    	cout << "[FAILED] COMBO TO STRING" << endl;
+    	cout << "[FAILED]" << endl;
     }
-
+    cout << "combo.toString() returned " << comb.toString() <<", expecting [2 of Spades][3 of Spades][4 of Spades]" << endl;
     cout << "CARD TESTS" << endl;
     if(c4.toString() == "[Ace of Hearts]"){
-    	cout << "[PASSED] CARD TO STRING" << endl;
+    	cout << "[PASSED]" << endl;
     }
     else{
-    	cout << "[FAILED] CARD TO STRING" << endl;
+    	cout << "[FAILED]" << endl;
     }
-
+    cout << "card.toString() returned " << c4.toString() <<", expecting [Ace of Hearts]" << endl;
     cout << "DISCARD PILE TESTS" << endl;
     if(isDiscardEmpty){
-    	cout << "[PASSED] TESTING IS EMPTY METHOD" << endl;
+    	cout << "[PASSED]" << endl;
     }
     else{
-    	cout << "[FAILED] TESTING IS EMPTY METHOD" << endl;
-    }
+    	cout << "[FAILED]" << endl;
+    } 
+    cout << "discardPile.isEmpty() returned " << isDiscardEmpty <<", expecting 1" << endl;
     if(!isDiscardEmptyAfterAdd){
-    	cout << "[PASSED] ADDING CARD TO DISCARD PILE" << endl;
+    	cout << "[PASSED]" << endl;
     }
     else{
-    	cout << "[FAILED] ADDING CARD TO DISCARD PILE" << endl;
+    	cout << "[FAILED]" << endl;
     }
+    cout << "discardPile.isEmpty() returned " << isDiscardEmptyAfterAdd <<", expecting 0" << endl;
     if(isDiscardEmptyAfterRM){
     	cout << "[PASSED] REMOVING CARD FROM DISCARD PILE" << endl;
     }
     else{
     	cout << "[FAILED] REMOVING CARD FROM DISCARD PILE" << endl;
     } 
-
+    cout << "discardPile.isEmpty() returned " << isDiscardEmptyAfterRM <<", expecting 1" << endl;
     cout << "DECK TESTS" << endl; 
     if(!emptyStartDeck){ 
-        cout << "[PASSED] CHECKING THAT START DECK ISN'T EMPTY" << endl;
+        cout << "[PASSED]" << endl;
     } 
     else{ 
-        cout << "[PASSED] CHECKING THAT START DECK ISN'T EMPTY" << endl;
-    } 
+        cout << "[FAILED]" << endl;
+    }  
+    cout << "deck.isEmpty() returned " << emptyStartDeck <<", expecting 0" << endl;
     if((shufCard3.suit()!=shufCard2.suit()!=shufCard1.suit()) && ((shufCard3.value()!= shufCard2.value()-1) && (shufCard3.value() != shufCard1.value()-2))){ 
-        cout << "[PASSED] SHUFFLED CARDS" << endl;
+        cout << "[PASSED]" << endl;
     }
     else{ 
-        cout << "[PASSED] SHUFFLED CARDS" << endl;
-    }
+        cout << "[FAILED]" << endl;
+    } 
+    cout << "cards shuffled? returned " <<((shufCard3.suit()!=shufCard2.suit()!=shufCard1.suit()) && ((shufCard3.value()!= shufCard2.value()-1) && (shufCard3.value() != shufCard1.value()-2))) <<", expecting 1" << endl;
 	return 0;
 }
 
