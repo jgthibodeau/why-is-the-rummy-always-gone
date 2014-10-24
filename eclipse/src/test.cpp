@@ -87,6 +87,10 @@ int main(int argc, char* argv[]){
     Card card4(2,3,5);
     Card card5(4,7,1);
 
+
+    Card test_Card;
+    bool test_bool;
+
     ///create single player
     Player player("mike", 0, 0, false);
 
@@ -94,40 +98,99 @@ int main(int argc, char* argv[]){
     ///-------------------------------
 
     ///Try to remove card before any cards are in player's hand
-    player.removeCard(0);
+    test_Card = player.removeCard(0);
+    if (test_Card.points() == 0)
+        cout << "[PASSED] ";
+    else
+        cout << "[FAILED] ";
+    cout << "Player.removeCard(0) returned card with value " << test_Card.points() << ", expecting 0" <<endl;
 
     ///add cards
     player.addCard(card1);
     player.addCard(card2);
     player.addCard(card3);
 
-    ///expecting 3+4+6 = 13
     int i = player.calculateScore();
+    if (i = 13)
+            cout << "[PASSED] ";
+    else
+            cout << "[FAILED] ";
+    cout << "Player.calculateScore() returned " << i << ", expected 13" << endl;
 
     ///remove card 3 (indexing begins at 0)
-    player.removeCard(2);
+    test_Card = player.removeCard(2);
+    if (test_Card.points() == 6)
+        cout << "[PASSED] ";
+    else
+        cout << "[FAILED] ";
+    cout << "Player.removeCard(2) returned " << test_Card.points() << ", expected 6" << endl;
+
     ///expecting 7
     i = player.calculateScore();
+    if (i = 7)
+        cout << "[PASSED] ";
+    else
+        cout << "[FAILED] ";
+    cout << "Player.calculateScore() returned " << i << ", expected 7" << endl;
 
-    ///should return error
-    player.swapCard(1,2);
 
     player.swapCard(0,1);
-    player.removeCard(1);
+    test_Card = player.removeCard(1);
+    if (test_Card.points() == 3)
+        cout << "[PASSED] ";
+    else
+        cout << "[FAILED] ";
+    cout << "Player.removeCard(1) returned " << test_Card.points() << ", expected 3" << endl;
+
     ///expecting 4
-    player.calculateScore();
+    i = player.calculateScore();
+    if (i == 4)
+        cout << "[PASSED] ";
+    else
+        cout << "[FAILED] ";
+    cout << "Player.calculateScore() returned " << i << ", expected 4" << endl;
+
 
     ///expecting to not knock
-    player.canKnock();
+    test_bool = player.canKnock();
+    if (test_bool == true)
+        cout << "[PASSED] ";
+    else
+        cout << "[FAILED] ";
+    cout << "player.canKnock() returned " << test_bool << ", expecting 1" << endl;
 
     player.addCard(card4);
     ///expecting 9
-    player.calculateScore();
+    i = player.calculateScore();
+    if (i == 9)
+        cout << "[PASSED] ";
+    else
+        cout << "[FAILED] ";
+    cout << "Player.calculateScore() returned " << i << ", expected 9" << endl;
     ///can knock
-    player.canKnock();
+    test_bool = player.canKnock();
+    if (test_bool == true)
+        cout << "[PASSED] ";
+    else
+        cout << "[FAILED] ";
+    cout << "player.canKnock() returned " << test_bool << ", expecting 1" << endl;
     player.addCard(card5);
+
+    i = player.calculateScore();
+    if (i == 10)
+        cout << "[PASSED] ";
+    else
+        cout << "[FAILED] ";
+    cout << "Player.calculateScore() returned " << i << ", expected 10" << endl;
+
+
     ///cant knock
-    player.canKnock();
+    test_bool = player.canKnock();
+    if (test_bool == false)
+        cout << "[PASSED] ";
+    else
+        cout << "[FAILED] ";
+    cout << "player.canKnock() returned " << test_bool << ", expecting 0" << endl;
 
 /**************
 * Zach's tests
