@@ -26,39 +26,40 @@ int main(int argc, char* argv[]){
 
 	//test Point class
 	cout << "POINT TESTS" << endl;
-	Point a;
+	Point point;
 
-	a.setPoint(1,2);
-	if(a.x() == 1 && a.y() == 2)
+	point.setPoint(1,2);
+	if(point.x() == 1 && point.y() == 2)
 		cout << "[PASSED]";
 	else
 		cout << "[FAILED]";
-	cout << " Point.setPoint(1,2) set point to value (" << a.x() << "," << a.y() << ")" << endl;
+	cout << " Point.setPoint(1,2) set point to (" << point.x() << "," << point.y() << ")" << endl;
 
-	a.move(3,4);
-	if(a.x() == 4 && a.y() == 6)
-		cout << "[PASSED]" << endl;
+	point.move(3,4);
+	if(point.x() == 4 && point.y() == 6)
+		cout << "[PASSED]";
 	else
-		cout << "[FAILED] Point.move" << endl;
+		cout << "[FAILED]";
+	cout << " Point.move(3,4) moved point to (" << point.x() << "," << point.y() << ")" << endl;
 
 	//test Cardslot class
-	cout << "     CARDSLOT TESTS" << endl;
-	CardSlot c;
+	cout << "CARDSLOT TESTS" << endl;
+	CardSlot slot;
 
-	c.setBounds(1,2,3,4);
-	if(c.position().x() == 1 && c.position().y() == 2 && c.width() == 3 && c.height() == 4)
+	slot.setBounds(1,2,3,4);
+	if(slot.position().x() == 1 && slot.position().y() == 2 && slot.width() == 3 && slot.height() == 4)
 		cout << "[PASSED]" << endl;
 	else
 		cout << "[FAILED] CardSlot.setBounds" << endl;
 
-	c.move(1,2);
-	if(c.position().x() == 2 && c.position().y() == 4)
+	slot.move(1,2);
+	if(slot.position().x() == 2 && slot.position().y() == 4)
 		cout << "[PASSED]" << endl;
 	else
 		cout << "[FAILED] CardSlot.move" << endl;
 
-	c.setHighlight(true);
-	if(c.highlighted())
+	slot.setHighlight(true);
+	if(slot.highlighted())
 		cout << "[PASSED]" << endl;
 	else
 		cout << "[FAILED] CardSlot.setHighlight" << endl;
@@ -140,7 +141,7 @@ int main(int argc, char* argv[]){
     //bool isDiscardEmptyAfterRM = discardP.isEmpty();
     bool isEmptyAfter = comb.isEmpty();
     bool comboValid = comb.isValid();
-    cout << "     COMBO TESTS" << endl;
+    cout << "COMBO TESTS" << endl;
     if(isEmptyBefore && !isEmptyAfter){
     	cout << "[PASSED] CHECKING EMPTY STATUS" << endl;
     }
@@ -166,7 +167,7 @@ int main(int argc, char* argv[]){
     	cout << "[FAILED] COMBO TO STRING" << endl;
     }
 
-    cout << "     CARD TESTS" << endl;
+    cout << "CARD TESTS" << endl;
     if(c4.toString() == "[Ace of Hearts]"){
     	cout << "[PASSED] CARD TO STRING" << endl;
     }
@@ -174,7 +175,7 @@ int main(int argc, char* argv[]){
     	cout << "[FAILED] CARD TO STRING" << endl;
     }
 
-    cout << "     DISCARD PILE TESTS" << endl;
+    cout << "DISCARD PILE TESTS" << endl;
     if(isDiscardEmpty){
     	cout << "[PASSED] TESTING IS EMPTY METHOD" << endl;
     }
