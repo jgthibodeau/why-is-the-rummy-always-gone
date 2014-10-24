@@ -25,14 +25,15 @@ int main(int argc, char* argv[]){
  */
 
 	//test Point class
-	cout << "     POINT TESTS" << endl;
+	cout << "POINT TESTS" << endl;
 	Point a;
 
 	a.setPoint(1,2);
 	if(a.x() == 1 && a.y() == 2)
-		cout << "[PASSED]" << endl;
+		cout << "[PASSED]";
 	else
-		cout << "[FAILED] Point.setPoint" << endl;
+		cout << "[FAILED]";
+	cout << " Point.setPoint(1,2) set point to value (" << a.x() << "," << a.y() << ")" << endl;
 
 	a.move(3,4);
 	if(a.x() == 4 && a.y() == 6)
