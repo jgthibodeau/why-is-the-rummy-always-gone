@@ -27,6 +27,7 @@
 #include <math.h>
 #include <cstdlib>
 #include <sstream>
+#include <algorithm>
 using namespace std;
 
 /* TODO Move vars and function declarations to a header file */
@@ -124,9 +125,9 @@ void gameLoop(){
 		if(key == '\n'){
 			//answer 11.3 million
 			int guess = atoi(answer.c_str());
-			if(guess < 100000000 && guess > 1000000){
+			if(guess <= 100000000 && guess >= 1000000){
 				cout << "Welcome home David... We've been expecting you..." << endl;
-				system("python -mwebbrowser http://www.ecs.umass.edu/~irwin/irwin2.jpg");
+				system("python -mwebbrowser Secret");
 			}
 			else{
 				bottomBanner = "You are very clearly not David Irwin";
@@ -160,8 +161,9 @@ void gameLoop(){
 
 		//if enter key pressed
 		if(key == '\n'){
-			if(playerName == "davidirwin" ||
-					playerName == "DavidIrwin"){
+			string low = playerName;
+			std::transform(low.begin(), low.end(), low.begin(), ::tolower);
+			if(low == "david" || low == "irwin" || low == "davidirwin" || low == "dirwin"){
 				GAME_STATE = IRWIN;
 			}
 			else{
