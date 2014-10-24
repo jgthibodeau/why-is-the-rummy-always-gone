@@ -7,11 +7,9 @@
 /*
  * Stretch goals:
  * 	prevent discarding card that was drawn from discard pile
- * 	show combo cards when clicking on combo
  *	better ai
  *	refactor code
  *	pull game logic code into player and etc.
- *	make sure deck has cards
  *	click and drag to insert player cards on ui
  */
 
@@ -42,6 +40,7 @@ static const int ENTER_NAME = 2;
 static const int IRWIN = 3;
 int GAME_STATE = OUT_GAME;
 string playerName="";
+string answer="";
 
 //game vars
 Player player1;
@@ -120,20 +119,38 @@ void gameLoop(){
 	//regular game
 	switch(GAME_STATE){
 	case IRWIN:
+		topBanner = "Prove it! What does an empty cement mixer truck weigh, measured in units of US dollar bills?";
+		bottomBanner = "Answer: "+answer;
+		if(key == '\n'){
+			//answer 11.3 million
+			int guess = atoi(answer.c_str());
+			if(guess < 100000000 && guess > 1000000){
+				cout << "Welcome home David... We've been expecting you..." << endl;
+				system("python -mwebbrowser http://www.ecs.umass.edu/~irwin/irwin2.jpg");
+			}
+			else{
+				bottomBanner = "You are very clearly not David Irwin";
+				GAME_STATE = OUT_GAME;
+			}
+		}
+
+		//if delete key pressed
+		else if((key == 7 || key == 74) && playerName.size() > 0)
+			answer.erase (answer.end() - 1);
+		//use key as next name letter
+		else if(isdigit(key))//key > 31 && key < 127)
+			answer = answer + key;
+
 	break;
 	case OUT_GAME:
 		topBanner = startMessage;
+		playerName = "";
+		answer = "";
 		//if startKey pushed
 		if(key == startKey.key()){
 			//go to ENTER_NAME state
 			GAME_STATE = ENTER_NAME;
 		}
-		//testing how mouse clicks fire events
-//		if(key == -1){
-//			stringstream ss;
-//			ss << gameDisplay.getMouseEventButton();
-//			bottomBanner = ss.str();
-//		}
 		break;
 	case ENTER_NAME:
 		//write startMessage
@@ -146,12 +163,11 @@ void gameLoop(){
 			if(playerName == "davidirwin" ||
 					playerName == "DavidIrwin"){
 				GAME_STATE = IRWIN;
-				cout << "Welcome home David... We've been expecting you..." << endl;
-				system("python -mwebbrowser http://www.ecs.umass.edu/~irwin/irwin2.jpg");
 			}
 			else{
 				GAME_STATE = IN_GAME;
 				bottomBanner = "";
+				//TODO convert to initialize method
 				//initialize stuff
 				deck.initialize();
 				deck.shuffle();
@@ -159,7 +175,7 @@ void gameLoop(){
 				player1.setName(playerName);
 				//TODO decide first player
 				curPlayer = &player1;
-				//Deal player cards
+				//Deal player cards TODO convert to player.draw(deck) method
 				for(int i=0;i<10;i++){
 					player1.addCard(deck.drawCard());
 				}
@@ -188,6 +204,7 @@ void gameLoop(){
 			else
 				selectedSlots[1] = temp;
 		}
+		//TODO convert to checkEndDeck() method
 		if(deck.isEmpty()){
 			bottomBanner = "The deck has run out of cards, oh noes!";
 		}
