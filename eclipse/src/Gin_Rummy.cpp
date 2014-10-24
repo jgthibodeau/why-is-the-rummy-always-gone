@@ -39,6 +39,7 @@ static const int OUT_GAME = 0;
 static const int IN_GAME = 1;
 static const int ENTER_NAME = 2;
 static const int IRWIN = 3;
+static const int STEVE = 4;
 int GAME_STATE = OUT_GAME;
 string playerName="";
 string answer="";
@@ -120,18 +121,18 @@ void gameLoop(){
 	//regular game
 	switch(GAME_STATE){
 	case IRWIN:
-		topBanner = "Prove it! What does an empty cement mixer truck weigh, measured in units of US dollar bills?";
+		topBanner = "Professor Irwin? Prove it! What does an empty cement mixer truck weigh, measured in units of US dollar bills?";
 		bottomBanner = "Answer: "+answer;
 		if(key == '\n'){
 			//answer 11.3 million
 			int guess = atoi(answer.c_str());
 			if(guess <= 100000000 && guess >= 1000000){
-				cout << "Welcome home David... We've been expecting you..." << endl;
+				cout << " Welcome home David... We've been expecting you..." << endl;
 				system("python -mwebbrowser Secret");
 			}
 			else{
 				bottomBanner = "You are very clearly not David Irwin";
-				GAME_STATE = OUT_GAME;
+				GAME_STATE = IN_GAME;
 			}
 		}
 
@@ -163,8 +164,13 @@ void gameLoop(){
 		if(key == '\n'){
 			string low = playerName;
 			std::transform(low.begin(), low.end(), low.begin(), ::tolower);
-			if(low == "david" || low == "irwin" || low == "davidirwin" || low == "dirwin"){
+			if(low == "david" || low == "irwin" || low == "davidirwin" || low == "dirwin"
+					|| low == "profirwin" || low == "professorirwin"){
 				GAME_STATE = IRWIN;
+			}
+			if(low == "steveirwin"){
+				system("python -mwebbrowser Secret2");
+				GAME_STATE = OUT_GAME;
 			}
 			else{
 				GAME_STATE = IN_GAME;
