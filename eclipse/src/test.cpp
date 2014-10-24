@@ -48,21 +48,32 @@ int main(int argc, char* argv[]){
 
 	slot.setBounds(1,2,3,4);
 	if(slot.position().x() == 1 && slot.position().y() == 2 && slot.width() == 3 && slot.height() == 4)
-		cout << "[PASSED]" << endl;
+		cout << "[PASSED]";
 	else
-		cout << "[FAILED] CardSlot.setBounds" << endl;
+		cout << "[FAILED]";
+	cout << " CardSlot.setBounds(1,2,3,4) set bounds of slot to (" << slot.position().x() << "," << slot.position().x()
+			<< slot.width() << "," << slot.height() << ")" << endl;
 
 	slot.move(1,2);
 	if(slot.position().x() == 2 && slot.position().y() == 4)
-		cout << "[PASSED]" << endl;
+		cout << "[PASSED]";
 	else
-		cout << "[FAILED] CardSlot.move" << endl;
+		cout << "[FAILED]";
+	cout << " CardSlot.move(1,2) moved slot to (" << slot.position().x() << "," << slot.position().y() << ")" << endl;
 
 	slot.setHighlight(true);
 	if(slot.highlighted())
-		cout << "[PASSED]" << endl;
+		cout << "[PASSED]";
 	else
-		cout << "[FAILED] CardSlot.setHighlight" << endl;
+		cout << "[FAILED]";
+	cout << " CardSlot.setHighlight(tue) set slot highlight to " << slot.highlighted() << endl;
+
+	slot.setHighlight(false);
+	if(!slot.highlighted())
+		cout << "[PASSED]";
+	else
+		cout << "[FAILED]";
+	cout << " CardSlot.setHighlight(tue) set slot highlight to " << slot.highlighted() << endl;
 
 	//test Display class?
 
