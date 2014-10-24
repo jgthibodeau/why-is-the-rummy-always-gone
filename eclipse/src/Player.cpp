@@ -18,7 +18,7 @@ int Player::calculateScore(){
     for (list<Card>::iterator it = Hand.begin(); it != Hand.end(); ++it){
         score += (*it).points();
     }
-
+    //cout << "score is " << score << endl;
     return score;
 }
 
@@ -27,8 +27,10 @@ bool Player::canKnock(){
     bool knock = false;
     int deadwood = calculateScore();
     if (deadwood < 10){
+        //cout << "player can knock, deadwood is " << deadwood << endl;
         knock = true;
     }
+    //cout << "player can't knock, deadwood is " << deadwood << endl;
     return knock;
 }
 
@@ -39,8 +41,13 @@ void Player::addCard(Card card){
 
 ///remove card from hand at index
 Card Player::removeCard(int index){
+    Card card(0,0,0);
+    if (Hand.empty()){
+        //cout << "can't remove, hand is empty" << endl;
+        return card;
+    }
     if (index <0 || index > Hand.size()-1){
-        Card card(0,0,0);
+        //cout << "can't remove, card at given index does not exist " << endl;
         return card;
     }
     list<Card>::iterator it = Hand.begin();
@@ -54,6 +61,7 @@ Card Player::removeCard(int index){
  Card Player::getCard(int index){
     if (index <0 || index > Hand.size()-1){
         Card card(0,0,0);
+        //cout << "can't return, card at given index does not exist " << endl;
         return card;
     }
     list<Card>::iterator it = Hand.begin();
@@ -63,12 +71,14 @@ Card Player::removeCard(int index){
 
 ///returns size of player's current hand
 int Player::handSize(){
+    //cout << "hand size is " << Hand.size() << endl;
     return Hand.size();
 }
 
  ///swaps the cards located in two indices in player's hand
 void Player::swapCard(int index1, int index2){
-    if(index1 >= Hand.size() || index2 >= Hand.size()){
+    if((index1 >= Hand.size() || index2 >= Hand.size()) || (index1<0 ||index2<0)){
+        //cout << "one of the indices is either too large or negative" << endl;
         return;
     }
     list<Card>::iterator card1 = Hand.begin();
