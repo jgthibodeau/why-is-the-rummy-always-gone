@@ -281,7 +281,7 @@ int main(int argc, char* argv[]){
     else{ 
         cout << "[PASSED] CHECKING THAT START DECK ISN'T EMPTY" << endl;
     } 
-    if((shufCard3.suit()!=shufCard2.suit()!=shufCard1.suit()) && (shufCard3().value()!= (shufCard2.value()-1 && shufCard1.value()-2))){ 
+    if((shufCard3.suit()!=shufCard2.suit()!=shufCard1.suit()) && ((shufCard3.value()!= shufCard2.value()-1) && (shufCard3.value() != shufCard1.value()-2))){ 
         cout << "[PASSED] SHUFFLED CARDS" << endl;
     }
     else{ 
