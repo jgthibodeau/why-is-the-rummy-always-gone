@@ -96,7 +96,7 @@ int main(int argc, char* argv[]){
 
     ///tests
     ///-------------------------------
-
+    cout << "PLAYER TESTS" << endl;
     ///Try to remove card before any cards are in player's hand
     test_Card = player.removeCard(0);
     if (test_Card.points() == 0)

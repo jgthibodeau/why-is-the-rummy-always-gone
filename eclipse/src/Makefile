@@ -6,7 +6,7 @@ CFLAGS=-c $(DEBUG)
 LDFLAGS=-lncursesw $(DEBUG)
 SOURCES=display.cpp Gin_Rummy.cpp Key.cpp CardSlot.cpp Point.cpp Card.cpp Deck.cpp DiscardPile.cpp Combo.cpp Player.cpp
 OBJECTS=$(SOURCES:.cpp=.o)
-EXECUTABLE=Gin_Rummy
+EXECUTABLE=Play
 
 all: clean $(SOURCES) $(EXECUTABLE)
 

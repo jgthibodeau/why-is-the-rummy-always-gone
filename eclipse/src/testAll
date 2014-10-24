@@ -1,0 +1,5 @@
+#! /bin/bash
+
+g++ -o test test.cpp Key.cpp Point.cpp CardSlot.cpp Card.cpp Deck.cpp DiscardPile.cpp Combo.cpp Player.cpp
+./test
+rm test
