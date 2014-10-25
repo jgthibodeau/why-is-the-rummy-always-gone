@@ -50,4 +50,4 @@ How to Play:
 ************
 How to Test:
 	Run './testAll'
-	This command will compile and run all of our tests located in the test.cpp file, each of which tests class methods.
+	This command will compile and run all of our tests located in the test.cpp file, each of which tests class methods, and run the resulting executable

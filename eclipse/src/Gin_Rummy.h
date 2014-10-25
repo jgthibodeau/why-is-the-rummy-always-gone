@@ -8,7 +8,4 @@
 #ifndef GIN_RUMMY_H_
 #define GIN_RUMMY_H_
 
-
-
-
 #endif /* GIN_RUMMY_H_ */
