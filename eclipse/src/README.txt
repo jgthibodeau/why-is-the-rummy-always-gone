@@ -1,9 +1,9 @@
-Gin Rummayyy
+Gin Rummy
 
 Authors:
-Michael Chapman
-Justin Thibodeau
-Zachary Windoloski
+Michael Chapman - Player class
+Justin Thibodeau - Display classes (Display, CardSlot, Point, Key) and integration
+Zachary Windoloski - Card classes (Card, Deck, Discard Pile, Combo)
 
 *********************
 How to Start/Compile:
