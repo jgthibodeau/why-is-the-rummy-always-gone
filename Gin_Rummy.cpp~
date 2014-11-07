@@ -132,7 +132,7 @@ void gameLoop(){
 			}
 			else{
 				bottomBanner = "You are very clearly not David Irwin";
-				GAME_STATE = OUT_GAME;
+				GAME_STATE = IN_GAME;
 			}
 		}
 
