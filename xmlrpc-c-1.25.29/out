@@ -1,0 +1,102 @@
+checking for a BSD-compatible install... /usr/bin/install -c
+checking whether build environment is sane... yes
+checking whether make sets $(MAKE)... yes
+checking for working aclocal... missing
+checking for working autoconf... missing
+checking for working automake... missing
+checking for working autoheader... missing
+checking for working makeinfo... missing
+checking build system type... i686-pc-linux-gnu
+checking host system type... i686-pc-linux-gnu
+checking for wininet-config... no
+configure: You don't appear to have Wininet installed (no working wininet-config in your command search path), so we will not build the Wininet client XML transport
+checking whether to build Wininet client XML transport module... no
+checking for curl-config... yes
+checking whether to build Curl client XML transport module... yes
+checking for libwww-config... no
+configure: You don't appear to have Libwww installed (no working libwww-config in your command search path), so we will not build the Libwww client XML transport
+checking whether to build Libwww client XML transport module... no
+checking for gcc... gcc
+checking for C compiler default output file name... a.out
+checking whether the C compiler works... yes
+checking whether we are cross compiling... no
+checking for suffix of executables... 
+checking for suffix of object files... o
+checking whether we are using the GNU C compiler... yes
+checking whether gcc accepts -g... yes
+checking for gcc option to accept ANSI C... none needed
+checking for main in -lncurses... yes
+checking for main in -lreadline... no
+checking whether to build tools... no
+checking whether to build Abyss server module... yes
+checking whether to build CGI server module... yes
+checking whether to build C++ wrappers and tools... yes
+checking for gcc... (cached) gcc
+checking whether we are using the GNU C compiler... (cached) yes
+checking whether gcc accepts -g... (cached) yes
+checking for gcc option to accept ANSI C... (cached) none needed
+checking for g++... g++
+checking whether we are using the GNU C++ compiler... yes
+checking whether g++ accepts -g... yes
+checking for socket... yes
+checking how to run the C preprocessor... gcc -E
+checking for egrep... grep -E
+checking for ANSI C header files... yes
+checking for sys/types.h... yes
+checking for sys/stat.h... yes
+checking for stdlib.h... yes
+checking for string.h... yes
+checking for memory.h... yes
+checking for strings.h... yes
+checking for inttypes.h... yes
+checking for stdint.h... yes
+checking for unistd.h... yes
+checking wchar.h usability... yes
+checking wchar.h presence... yes
+checking for wchar.h... yes
+checking sys/filio.h usability... no
+checking sys/filio.h presence... no
+checking for sys/filio.h... no
+checking sys/ioctl.h usability... yes
+checking sys/ioctl.h presence... yes
+checking for sys/ioctl.h... yes
+checking sys/select.h usability... yes
+checking sys/select.h presence... yes
+checking for sys/select.h... yes
+checking stdarg.h usability... yes
+checking stdarg.h presence... yes
+checking for stdarg.h... yes
+checking for size_t... yes
+checking whether va_list is an array... no
+checking whether compiler has __attribute__... yes
+checking for vsnprintf... yes
+checking for wcsncmp... yes
+checking for setgroups... yes
+checking for asprintf... yes
+checking for setenv... yes
+checking for strtoll... yes
+checking for strtoull... yes
+checking for strtoq... yes
+checking for strtouq... yes
+checking for __strtoll... no
+checking for __strtoull... no
+checking for pselect... yes
+checking for gettimeofday... yes
+checking for localtime_r... yes
+checking for gmtime_r... yes
+checking for strcasecmp... yes
+checking for stricmp... no
+checking for _stricmp... no
+checking whether to use Abyss pthread function... yes
+checking for curl-xmlrpc-config... no
+checking for curl-config... /usr/bin/curl-config
+checking for curl library directory... /usr/lib
+checking whether to use SSL with libwww... no
+checking whether to build the libxml2 backend... no
+configure: creating ./config.status
+config.status: creating srcdir.mk
+config.status: creating config.mk
+config.status: creating xmlrpc_config.h
+config.status: creating xmlrpc_amconfig.h
+config.status: xmlrpc_amconfig.h is unchanged
+config.status: executing default-1 commands
