@@ -51,6 +51,7 @@ static const int STEVE = 4;
 int GAME_STATE = OUT_GAME;
 string playerName="";
 string answer="";
+int turnPhase = -1;
 
 //display vars
 display gameDisplay;
