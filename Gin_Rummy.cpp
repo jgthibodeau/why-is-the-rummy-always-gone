@@ -13,7 +13,6 @@
  *	click and drag to insert player cards on ui
  */
 
-#include "display.h"
 #include "Key.h"
 #include "Point.h"
 #include "CardSlot.h"
@@ -23,16 +22,25 @@
 #include "Combo.h"
 #include "Player.h"
 #include <signal.h>
-#include <ncurses.h>
 #include <math.h>
 #include <cstdlib>
 #include <sstream>
 #include <algorithm>
+#include <vector>
+
+#include <cassert>
+#include <stdexcept>
+#include <iostream>
+#include <unistd.h>
+#include <xmlrpc-c/base.hpp>
+#include <xmlrpc-c/registry.hpp>
+#include <xmlrpc-c/server_abyss.hpp>
+
 using namespace std;
 
 /* TODO Move vars and function declarations to a header file */
 
-// client vars
+//client vars
 char key;
 //enumerable for game state
 static const int OUT_GAME = 0;
@@ -53,8 +61,6 @@ Card cardBack(0,0,0);
 DiscardPile discardPile;
 Combo combos[6];
 
-//display vars
-display gameDisplay;
 //input keys
 Key startKey('n', "New Game");
 Key knockKey('k', "Knock");
@@ -76,148 +82,87 @@ string dontComboMessage = "Those cards don't combo!";
 string badDeadwoodMessage = "You have too much remaining deadwood!";
 string topBanner,bottomBanner;
 
-// Signal Subroutine for Window Resize
-static void detectResize (int sig);
-//main game loop
-void gameLoop();
-//main draw method
-void draw();
-//draw cards
-void drawCards();
-//draw the displays banners
-void drawBanners();
-//find a cardSlot at a given point
-CardSlot *findCardSlot(int x, int y);
+
 //reset highlights and selected cards
 void resetSelectedSlots();
-//reset cardSlot positions based on window size
-void resizeCardSlots();
 
-int main(int argc, char* argv[])
-{
-	//initialize cardSlots for display
-	resizeCardSlots();
+//TODO eventually!
+//save();
+//load();
 
-	// enable a interrupt triggered on a window resize
-	signal(SIGWINCH, detectResize); // enable the window resize signal
 
-	// infinite loop for the main game
-	for (;;) {
-		gameLoop();
-		draw();
+//set us up the gamez
+class initialize : public xmlrpc_c::method{
+public:
+	initialize(){}
+	void execute(xmlrpc_c::paramList const& paramList, xmlrpc_c::value* const retvalP){
+		string name = paramList.getString(0);
+		paramList.verifyEnd(1);
+
+		deck.initialize();
+		deck.shuffle();
+		discardPile.initialize();
+		//TODO decide first player
+		curPlayer = &player1;
+		//Deal player cards
+		for(int i=0;i<10;i++){
+			player1.addCard(deck.drawCard());
+			player1.setTurnPhase(Player::draw);
+			player1.setName(name);
+		}
+		for(int i=0;i<10;i++){
+			player2.addCard(deck.drawCard());
+			player2.setTurnPhase(Player::draw);
+		}
+		discardPile.addCard(deck.drawCard());
+
+		//initialize cardslots
+		cardSlots[0] = CardSlot(0,0,0,0,CardSlot::deck);		//1 deck
+		cardSlots[1] = CardSlot(0,0,0,0,CardSlot::discard);	//1 discard pile
+		for(int i=0;i<11;i++){									//11 player cards
+			cardSlots[2+i] = CardSlot(0,0,0,0, CardSlot::player, i);
+		}
+		for(int i=0;i<6;i++){									//6 combo cards
+			cardSlots[13+i] = CardSlot(0,0,0,0, CardSlot::combo, i);
+		}
+
+		*retvalP = xmlrpc_c::value_boolean(true);
 	}
+};
 
-	return 0;
-}
+//receive input from client and deal wit it, returns state of the garmez
+class respondToInput : public xmlrpc_c::method{
+public:
+	respondToInput(){}
+	void execute(xmlrpc_c::paramList const& paramList, xmlrpc_c::value* const retvalP){
 
-void gameLoop(){
-	// calls the game display to get input
-	char key = gameDisplay.captureInput();
+		//set the input vars to useable vars
+		int key = paramList.getInt(0);
+		int cardSlotIndex = paramList.getInt(1);
+		string playerName = paramList.getString(2);
+		paramList.verifyEnd(3);
 
-	//if quitKey pressed
-	if(key == quitKey.key())
-		std::exit(0);
+		//if quitKey pressed
+		if(key == quitKey.key())
+			std::exit(0);
 
-	//regular game
-	switch(GAME_STATE){
-	case IRWIN:
-		topBanner = "Professor Irwin? Prove it! What does an empty cement mixer truck weigh, measured in units of US dollar bills?";
-		bottomBanner = "Answer: "+answer;
-		if(key == '\n'){
-			//answer 11.3 million
-			int guess = atoi(answer.c_str());
-			if(guess <= 100000000 && guess >= 1000000){
-				cout << " Welcome home David... We've been expecting you..." << endl;
-				system("python -mwebbrowser Secret");
-			}
-			else{
-				bottomBanner = "You are very clearly not David Irwin";
-				GAME_STATE = OUT_GAME;
-			}
-		}
-
-		//if delete key pressed
-		else if((key == 7 || key == 74) && playerName.size() > 0)
-			answer.erase (answer.end() - 1);
-		//use key as next name letter
-		else if(isdigit(key))//key > 31 && key < 127)
-			answer = answer + key;
-
-	break;
-	case OUT_GAME:
-		topBanner = startMessage;
-		playerName = "";
-		answer = "";
-		//if startKey pushed
-		if(key == startKey.key()){
-			//go to ENTER_NAME state
-			GAME_STATE = ENTER_NAME;
-		}
-		break;
-	case ENTER_NAME:
-		//write startMessage
-		topBanner = startMessage;
-		//prompt for name
-		bottomBanner = nameMessage+playerName;
-
-		//if enter key pressed
-		if(key == '\n'){
-			string low = playerName;
-			std::transform(low.begin(), low.end(), low.begin(), ::tolower);
-			if(low == "david" || low == "irwin" || low == "davidirwin" || low == "dirwin"
-					|| low == "profirwin" || low == "professorirwin"){
-				GAME_STATE = IRWIN;
-			}
-			else if(low == "steveirwin"){
-				system("python -mwebbrowser Secret2");
-				GAME_STATE = OUT_GAME;
-			}
-			else{
-				GAME_STATE = IN_GAME;
-				bottomBanner = "";
-				//TODO convert to initialize method
-				//initialize stuff
-				deck.initialize();
-				deck.shuffle();
-				discardPile.initialize();
-				player1.setName(playerName);
-				//TODO decide first player
-				curPlayer = &player1;
-				//Deal player cards TODO convert to player.draw(deck) method
-				for(int i=0;i<10;i++){
-					player1.addCard(deck.drawCard());
-				}
-				for(int i=0;i<10;i++){
-					player2.addCard(deck.drawCard());
-				}
-				discardPile.addCard(deck.drawCard());
-			}
-		}
-
-		//if delete key pressed
-		else if((key == 7 || key == 74) && playerName.size() > 0)
-			playerName.erase (playerName.end() - 1);
-		//use key as next name letter
-		else if(isalnum(key))//key > 31 && key < 127)
-			playerName = playerName + key;
-		break;
-	case IN_GAME:
-		//if mouseClick, 1 and 4 are click and release (removes issues from holding then releasing)
-		if(key == -1 && (gameDisplay.getMouseEventButton() == 1 || gameDisplay.getMouseEventButton() == 4)){
-			//get card clicked if any
-			CardSlot* temp = findCardSlot(gameDisplay.getMouseEventX(), gameDisplay.getMouseEventY());
-
-			if(selectedSlots[0] == NULL)
-				selectedSlots[0] = temp;
-			else
-				selectedSlots[1] = temp;
-		}
 		//TODO convert to checkEndDeck() method
 		if(deck.isEmpty()){
 			bottomBanner = "The deck has run out of cards, oh noes!";
 		}
-		//if player turn
-		else if(curPlayer == &player1){
+		//if this player's turn
+		if(playerName == (*curPlayer).getName()){
+			//set up selected slots
+			if(cardSlotIndex >= 0){
+				//get card clicked if any
+				CardSlot* temp = &cardSlots[cardSlotIndex];
+
+				if(selectedSlots[0] == NULL)
+					selectedSlots[0] = temp;
+				else
+					selectedSlots[1] = temp;
+			}
+
 			//allow player to swap cards around
 			//if 1st selected is player card
 			if(selectedSlots[0] != NULL && (*selectedSlots[0]).type() == CardSlot::player){
@@ -226,12 +171,12 @@ void gameLoop(){
 				//if 2nd selected is player cards
 				if(selectedSlots[1] != NULL && (*selectedSlots[1]).type() == CardSlot::player){
 					//swap and unhighlight
-					player1.swapCard((*selectedSlots[0]).index(), (*selectedSlots[1]).index());
+					(*curPlayer).swapCard((*selectedSlots[0]).index(), (*selectedSlots[1]).index());
 					resetSelectedSlots();
 				}
 			}
 			//player phases
-			switch(player1.getTurnPhase()){
+			switch((*curPlayer).getTurnPhase()){
 				//if in draw phase
 				case(Player::draw):
 					topBanner = drawMessage;
@@ -240,8 +185,9 @@ void gameLoop(){
 					if((selectedSlots[0] != NULL && (*selectedSlots[0]).type() == CardSlot::deck) ||
 							(selectedSlots[1] != NULL && (*selectedSlots[1]).type() == CardSlot::deck)){
 						//give player a deck card and go to play phase
-						player1.addCard(deck.drawCard());
-						player1.setTurnPhase(Player::play);
+						(*curPlayer).addCard(deck.drawCard());
+						topBanner = playMessage;
+						(*curPlayer).setTurnPhase(Player::play);
 						resetSelectedSlots();
 					}
 
@@ -250,8 +196,9 @@ void gameLoop(){
 							(selectedSlots[1] != NULL && (*selectedSlots[1]).type() == CardSlot::discard)){
 						if(!discardPile.isEmpty()){
 							//give player a discard card and go to play phase
-							player1.addCard(discardPile.removeCard());
-							player1.setTurnPhase(Player::play);
+							(*curPlayer).addCard(discardPile.removeCard());
+							(*curPlayer).setTurnPhase(Player::play);
+							topBanner = playMessage;
 							resetSelectedSlots();
 						}
 						else
@@ -261,25 +208,29 @@ void gameLoop(){
 
 				//if in play phase
 				case(Player::play):
-					topBanner = playMessage;
-
 					//if knockKey pressed
 					if(key == knockKey.key()){
-						player1.setTurnPhase(Player::knock);
+						(*curPlayer).setTurnPhase(Player::knock);
+						topBanner = knockMessage;
 					}
 
 					else if(selectedSlots[0] != NULL){
-						//if player card is 1st selected selected
+						//if player card is 1st selected
 						if((*selectedSlots[0]).type() == CardSlot::player){
 							(*selectedSlots[0]).setHighlight(true);
 							//if 2nd selected is discard
 							if((selectedSlots[1] != NULL) && ((*selectedSlots[1]).type() == CardSlot::discard)){
 								//discard selected and reset
-								Card c = player1.removeCard((*selectedSlots[0]).index());
+								Card c = (*curPlayer).removeCard((*selectedSlots[0]).index());
 								//if card was actually removed
 								if(c.isValid()){
 									discardPile.addCard(c);
-									curPlayer = &player2;
+									if(curPlayer == &player1)
+										curPlayer = &player2;
+									else
+										curPlayer = &player1;
+									(*curPlayer).setTurnPhase(Player::draw);
+									topBanner = notTurnMessage;
 								}
 								resetSelectedSlots();
 							}
@@ -293,7 +244,6 @@ void gameLoop(){
 
 				//if knock phase
 				case(Player::knock):
-					topBanner = knockMessage;
 
 					if(selectedSlots[0] != NULL){
 						//if click combo, print combo cards on bottomBanner
@@ -307,7 +257,7 @@ void gameLoop(){
 							(*selectedSlots[0]).setHighlight(true);
 							//if 2nd selected is combo
 							if((selectedSlots[1] != NULL) && ((*selectedSlots[1]).type() == CardSlot::combo)){
-								Card c = player1.removeCard((*selectedSlots[0]).index());
+								Card c = (*curPlayer).removeCard((*selectedSlots[0]).index());
 								if(c.isValid()){
 									//try to move this card into this combo
 									//Combo com = combos[(*selectedSlots[1]).index()];
@@ -316,12 +266,12 @@ void gameLoop(){
 										//if combo ok
 										bottomBanner = combos[(*selectedSlots[1]).index()].toString();
 									else{
-										player1.addCard(c);
+										(*curPlayer).addCard(c);
 										bottomBanner = dontComboMessage+" "+combos[(*selectedSlots[1]).index()].toString();
 									}
 								}
 								else
-									player1.addCard(c);
+									(*curPlayer).addCard(c);
 								resetSelectedSlots();
 							}
 							//if 2nd selected is discard
@@ -337,8 +287,8 @@ void gameLoop(){
 								}
 								if(failedCombo == 0){
 									//if deadwood ok
-									Card c = player1.removeCard((*selectedSlots[0]).index());
-									if(player1.canKnock()){
+									Card c = (*curPlayer).removeCard((*selectedSlots[0]).index());
+									if((*curPlayer).canKnock()){
 										//TODO SUCCESSFUL KNOCK
 										discardPile.addCard(c);
 										//go to next player
@@ -347,7 +297,7 @@ void gameLoop(){
 										bottomBanner = "A winner is you!";
 									}
 									else{
-										player1.addCard(c);
+										(*curPlayer).addCard(c);
 										bottomBanner = badDeadwoodMessage;
 									}
 								}
@@ -370,11 +320,12 @@ void gameLoop(){
 						for(int i=0;i<6;i++){
 							while(!combos[i].isEmpty()){
 								Card c = combos[i].removeCard();
-								player1.addCard(c);
+								(*curPlayer).addCard(c);
 							}
 						}
 						//go to play phase
-						player1.setTurnPhase(Player::play);
+						topBanner = playMessage;
+						(*curPlayer).setTurnPhase(Player::play);
 					}
 				break;
 
@@ -385,7 +336,6 @@ void gameLoop(){
 				 */
 				//if last turn phase
 				case(Player::not_knocker):
-					topBanner = knockMessage;
 
 					if(selectedSlots[0] != NULL){
 						//if player card is 1st selected selected
@@ -418,105 +368,92 @@ void gameLoop(){
 			}
 		}
 
-		//if ai turn
-		else if(curPlayer == &player2){
-			topBanner = notTurnMessage;
+		else{
+			sleep(1);
 			//execute ai code
 			player2.addCard(deck.drawCard());
 			Card c = player2.removeCard(0);
 			discardPile.addCard(c);
 			curPlayer = &player1;
 			player1.setTurnPhase(Player::draw);
+			topBanner = drawMessage;
 		}
-	break;
-	}
-}
 
-void draw(){
-	//erase the canvas
-	gameDisplay.eraseBox(0,0,100000,1000000);
-	gameDisplay.fillBackground();
-	drawBanners();
-	if(GAME_STATE == IN_GAME)
-		drawCards();
-}
-
-void drawCards(){
-	//draw all cards/slots
-	for(int i=0;i<NUMBERCARDSLOTS;i++){
-		//draw highlight
-		if(cardSlots[i].highlighted())
-			gameDisplay.drawBox(cardSlots[i].position().x()-1, cardSlots[i].position().y()-1, cardSlots[i].width()+2,cardSlots[i].height()+2,0);
-
-		//draw cards
-		CardSlot slot = cardSlots[i];
-		Card* card = NULL;
-		Card c;
-		bool display = true;
-		switch (slot.type()){
-		case (CardSlot::deck):
-			card = &cardBack;
-			break;
-		case (CardSlot::discard):
-			if(!discardPile.isEmpty()){
-				c = discardPile.topCard();
-				card = &c;
-			}
-			break;
-		case (CardSlot::player):
-			if(slot.index() < player1.handSize()){
-				c = player1.getCard(slot.index());
-				card = &c;
-			}
-			break;
-		case (CardSlot::combo):
-			if(player1.getTurnPhase() != Player::knock && player1.getTurnPhase() != Player::not_knocker)
-				display = false;
-			else
+		//convert cards/player info/banner into a big ol' array to return
+		vector<xmlrpc_c::value> returnData;
+		returnData.push_back(xmlrpc_c::value_string(topBanner));
+		returnData.push_back(xmlrpc_c::value_string(bottomBanner));
+		if((*curPlayer).getName() == playerName)
+			returnData.push_back(xmlrpc_c::value_int((*curPlayer).getTurnPhase()));
+		else
+			returnData.push_back(xmlrpc_c::value_int(-1));
+		//get the player that called here
+		Player* thisPlayer = &player1;
+		if(player2.getName() == playerName)
+			thisPlayer = &player2;
+		//send data for all cards
+		int i;
+		for(i=0;i<NUMBERCARDSLOTS;i++){
+			CardSlot slot = cardSlots[i];
+			Card* card = NULL;
+			Card c;
+			switch (slot.type()){
+			case (CardSlot::deck):
+				card = &cardBack;
+				break;
+			case (CardSlot::discard):
+				if(!discardPile.isEmpty()){
+					c = discardPile.topCard();
+					card = &c;
+				}
+				break;
+			case (CardSlot::player):
+				if(slot.index() < (*thisPlayer).handSize()){
+					c = (*thisPlayer).getCard(slot.index());
+					card = &c;
+				}
+				break;
+			case (CardSlot::combo):
 				if(!combos[slot.index()].isEmpty()){
 					c = combos[slot.index()].showCard();
 					card = &c;
 				}
-			break;
+				break;
+			}
+			if(card != NULL){
+				returnData.push_back(xmlrpc_c::value_int((*card).suit()));
+				returnData.push_back(xmlrpc_c::value_int((*card).value()));
+				returnData.push_back(xmlrpc_c::value_boolean(slot.highlighted()));
+			}
+			else{
+				returnData.push_back(xmlrpc_c::value_int(-1));
+				returnData.push_back(xmlrpc_c::value_int(-1));
+				returnData.push_back(xmlrpc_c::value_boolean(false));
+			}
 		}
-		if(display){
-			if(card == NULL)
-				gameDisplay.drawBox(cardSlots[i].position().x(),cardSlots[i].position().y(),6,5,0);
-			else
-				gameDisplay.displayCard(cardSlots[i].position().x(),cardSlots[i].position().y(),(*card).suit(),(*card).value(),0);
-		}
-	}
-}
 
-void drawBanners(){
-	stringstream messageString;
-	if(topBanner != ""){
-		messageString.str("");
-		messageString << topBanner;
-		gameDisplay.bannerTop(messageString.str());
-	}
+		// Make an XML-RPC array out of it
+		xmlrpc_c::value_array ret(returnData);
 
-	if(bottomBanner != ""){
-		messageString.str("");
-		messageString << bottomBanner;
-		gameDisplay.bannerBottom(messageString.str());
+		*retvalP = xmlrpc_c::value_array(ret);
 	}
-}
+};
 
-CardSlot *findCardSlot(int x, int y){
-	//iterate over card slots
-	int minX,minY,maxX,maxY;
-	for(int i=0;i<NUMBERCARDSLOTS;i++){
-		minX=cardSlots[i].position().x();
-		maxX=minX+cardSlots[i].width();
-		minY=cardSlots[i].position().y();
-		maxY=minY+cardSlots[i].height();
-		//return CardSlot if found
-		if(x>=minX && x<=maxX && y>=minY && y<=maxY){
-			return &cardSlots[i];
-		}
-	}
-	return NULL;
+int main(int const argc, const char** const argv){
+	xmlrpc_c::registry myRegistry;
+	xmlrpc_c::methodPtr const respondToInputP(new respondToInput);
+	myRegistry.addMethod("server.respondToInput", respondToInputP);
+	xmlrpc_c::methodPtr const initializeP(new initialize);
+	myRegistry.addMethod("server.initialize", initializeP);
+
+	xmlrpc_c::serverAbyss welcomeToTheAbyss(
+		myRegistry,
+		8080,
+		"/tmp/xmlrpc_log");
+
+	welcomeToTheAbyss.run();
+	assert(false);
+	return 0;
 }
 
 void resetSelectedSlots(){
@@ -526,26 +463,4 @@ void resetSelectedSlots(){
 		(*selectedSlots[1]).setHighlight(false);
 	selectedSlots[0] = NULL;
 	selectedSlots[1] = NULL;
-}
-
-void resizeCardSlots(){
-	int numCols = (gameDisplay.getCols()-2)/8;
-	cardSlots[0] = CardSlot(2,2,6,5,CardSlot::deck);		//1 deck
-	cardSlots[1] = CardSlot(10,2,6,5,CardSlot::discard);	//1 discard pile
-	for(int i=0;i<11;i++){									//11 player cards
-		cardSlots[2+i] = CardSlot(2+8*i,12, 6, 5, CardSlot::player, i);
-	}
-	for(int i=0;i<6;i++){									//6 combo cards
-		cardSlots[13+i] = CardSlot(2+8*i,7, 6, 5, CardSlot::combo, i);
-	}
-}
-
-void detectResize(int sig) {
-	// update the display class information with the new window size
-    gameDisplay.handleResize(sig);
-	// re-enable the interrupt for a window resize
-    signal(SIGWINCH, detectResize);
-
-    //resize positions for cardSlots
-    resizeCardSlots();
 }

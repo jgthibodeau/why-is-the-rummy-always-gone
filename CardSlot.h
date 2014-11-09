@@ -13,6 +13,8 @@ private:
 	bool highlight;
 	int typeVal;
 	int indexVal;
+	int suitVal;
+	int valueVal;
 
 public:
 	//types of slots
@@ -32,10 +34,14 @@ public:
 	bool highlighted() { return highlight; }
 	int type() { return typeVal; }
 	int index() { return indexVal; }
+	int suit() { return suitVal; }
+	int value() { return valueVal; }
 
 	// Setters
 	void setBounds(int x, int y, int width, int height){ positionPoint.setPoint(x,y); widthVal=width;heightVal=height; }
 	void move(double a, double b){ positionPoint.move(a,b); }
 	void setHighlight(bool b){ highlight=b; }
+	void setSuit(int i){ suitVal = i; }
+	void setValue(int i){ valueVal = i; }
 };
 #endif
