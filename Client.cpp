@@ -24,11 +24,6 @@
 #include "Key.h"
 #include "Point.h"
 #include "CardSlot.h"
-#include "Card.h"
-#include "Deck.h"
-#include "DiscardPile.h"
-#include "Combo.h"
-#include "Player.h"
 #include <signal.h>
 #include <ncurses.h>
 #include <math.h>
@@ -57,18 +52,8 @@ int GAME_STATE = OUT_GAME;
 string playerName="";
 string answer="";
 
-//game vars
-Player player1;
-Player player2;
-Player* curPlayer;
-Deck deck;
-Card cardBack(0,0,0);
-DiscardPile discardPile;
-Combo combos[6];
-
 //display vars
 display gameDisplay;
-int turnPhase;
 //input keys
 Key startKey('n', "New Game");
 Key knockKey('k', "Knock");
@@ -193,8 +178,7 @@ void gameLoop(){
 				bottomBanner = "";
 				//TODO
 				//tell server this players name
-				//initialize game
-				//initialize stuff
+				//go to wait or in game state
 				xmlrpc_c::value result;
 				client.call(SERVERURL, "server.initialize", "s", &result, playerName.c_str());
 				xmlrpc_c::value initialCards;
@@ -253,20 +237,6 @@ void decipherCards(xmlrpc_c::value cards){
 		it++;
 		i++;
 	}
-	// bottomBanner = xmlrpc_c::value_string(v.front());
-	// v.erase(v.begin());
-	// int temp = xmlrpc_c::value_int(v.front());
-	// v.erase(v.begin());
-
-	//send data for all cards
-	// int i;
-	// for(i=0;i<NUMBERCARDSLOTS;i++){
-	// 	CardSlot slot = cardSlots[i];
-	// 	Card* card = NULL;
-	// 	Card c;
-	// 	returnData.push_back(xmlrpc_c::value_int(-1));
-	// 	returnData.push_back(xmlrpc_c::value_int(-1));
-	// }
 }
 
 void draw(){
@@ -292,43 +262,6 @@ void drawCards(){
 			gameDisplay.displayCard(slot.position().x(),slot.position().y(),slot.suit(),slot.value(),0);
 		else
 			gameDisplay.drawBox(slot.position().x(),slot.position().y(),6,5,0);
-
-
-		// Card* card = NULL;
-		// Card c;
-		// bool display = true;
-		// switch (slot.type()){
-		// case (CardSlot::deck):
-		// 	card = &cardBack;
-		// 	break;
-		// case (CardSlot::discard):
-		// 	if(!discardPile.isEmpty()){
-		// 		c = discardPile.topCard();
-		// 		card = &c;
-		// 	}
-		// 	break;
-		// case (CardSlot::player):
-		// 	if(slot.index() < player1.handSize()){
-		// 		c = player1.getCard(slot.index());
-		// 		card = &c;
-		// 	}
-		// 	break;
-		// case (CardSlot::combo):
-		// 	if(player1.getTurnPhase() != Player::knock && player1.getTurnPhase() != Player::not_knocker)
-		// 		display = false;
-		// 	else
-		// 		if(!combos[slot.index()].isEmpty()){
-		// 			c = combos[slot.index()].showCard();
-		// 			card = &c;
-		// 		}
-		// 	break;
-		// }
-		// if(display){
-		// 	if(card == NULL)
-		// 		gameDisplay.drawBox(cardSlots[i].position().x(),cardSlots[i].position().y(),6,5,0);
-		// 	else
-		// 		gameDisplay.displayCard(cardSlots[i].position().x(),cardSlots[i].position().y(),(*card).suit(),(*card).value(),0);
-		// }
 	}
 }
 
