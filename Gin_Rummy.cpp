@@ -42,15 +42,6 @@ using namespace std;
 
 //client vars
 char key;
-//enumerable for game state
-static const int OUT_GAME = 0;
-static const int IN_GAME = 1;
-static const int ENTER_NAME = 2;
-static const int IRWIN = 3;
-static const int STEVE = 4;
-int GAME_STATE = OUT_GAME;
-string playerName="";
-string answer="";
 
 //game vars
 Player player1;
@@ -87,9 +78,21 @@ string topBanner,bottomBanner;
 void resetSelectedSlots();
 
 //TODO eventually!
-//save();
-//load();
+class save : public xmlrpc_c::method{
+public:
+	save(){}
+	void execute(xmlrpc_c::paramList const& paramList, xmlrpc_c::value* const retvalP){
+		//save all the things
+	}
+};
 
+class load : public xmlrpc_c::method{
+public:
+	load(){}
+	void execute(xmlrpc_c::paramList const& paramList, xmlrpc_c::value* const retvalP){
+		//load all the things
+	}
+};
 
 //set us up the gamez
 class initialize : public xmlrpc_c::method{
@@ -98,6 +101,13 @@ public:
 	void execute(xmlrpc_c::paramList const& paramList, xmlrpc_c::value* const retvalP){
 		string name = paramList.getString(0);
 		paramList.verifyEnd(1);
+
+		//TODO make deez methods
+		// player1.initialize();
+		// player2.initialize();
+		// discardPile.initialize();
+		// for(int i=0;i<6;i++)
+		// 	combos[i].initialize();
 
 		deck.initialize();
 		deck.shuffle();
@@ -445,6 +455,10 @@ int main(int const argc, const char** const argv){
 	myRegistry.addMethod("server.respondToInput", respondToInputP);
 	xmlrpc_c::methodPtr const initializeP(new initialize);
 	myRegistry.addMethod("server.initialize", initializeP);
+	xmlrpc_c::methodPtr const saveP(new save);
+	myRegistry.addMethod("server.save", saveP);
+	xmlrpc_c::methodPtr const loadP(new load);
+	myRegistry.addMethod("server.load", loadP);
 
 	xmlrpc_c::serverAbyss welcomeToTheAbyss(
 		myRegistry,
