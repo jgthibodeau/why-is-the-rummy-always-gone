@@ -40,8 +40,12 @@ using namespace std;
 
 /* TODO Move vars and function declarations to a header file */
 
-//client vars
+//interaction vars
 char key;
+//enumberable for game status
+static const int FULL = 0;
+static const int WAITING = 1;
+static const int EMPTY = 2;
 
 //game vars
 Player player1;
@@ -76,6 +80,20 @@ string topBanner,bottomBanner;
 
 //reset highlights and selected cards
 void resetSelectedSlots();
+
+//returns the current game status (game going, waiting for p2, no game)
+class gameStatus : public xmlrpc_c::method{
+public:
+	gameStatus(){}
+	void execute(xmlrpc_c::paramList const& paramList, xmlrpc_c::value* const retvalP){
+		if(player1.getName() == "")
+			*retvalP = xmlrpc_c::value_int(EMPTY);
+		else if(player2.getName() == "")
+			*retvalP = xmlrpc_c::value_int(WAITING);
+		else
+			*retvalP = xmlrpc_c::value_int(FULL);
+	}
+};
 
 //TODO eventually!
 class save : public xmlrpc_c::method{
@@ -505,6 +523,8 @@ int main(int const argc, const char** const argv){
 	myRegistry.addMethod("server.load", addPlayerP);
 	xmlrpc_c::methodPtr const quitP(new quit);
 	myRegistry.addMethod("server.load", quitP);
+	xmlrpc_c::methodPtr const gameStatusP(new gameStatus);
+	myRegistry.addMethod("server.gameStatus", gameStatusP);
 
 	xmlrpc_c::serverAbyss welcomeToTheAbyss(
 		myRegistry,

@@ -9,6 +9,15 @@ Player::Player(string name, int score, int turnPhase, bool activity)
     score = score;
     turnPhase = turnPhase;
     activity = activity;
+    ai = false;
+}
+Player::Player(string name, int score, int turnPhase, bool activity, bool ai)
+{
+    name = name;
+    score = score;
+    turnPhase = turnPhase;
+    activity = activity;
+    ai = ai;
 }
 
 

@@ -51,6 +51,10 @@ static const int STEVE = 4;
 static const int LOBBY = 5;
 static const int PRE_GAME = 6;
 int GAME_STATE = OUT_GAME;
+//enumberable for server state
+static const int FULL = 0;
+static const int WAITING = 1;
+static const int EMPTY = 2;
 string playerName="";
 string answer="";
 int turnPhase = -1;
@@ -58,9 +62,10 @@ int turnPhase = -1;
 //display vars
 display gameDisplay;
 //input keys
-Key startKey('n', "Start Game");
+Key startKey('\n', "Login");
 Key singleKey('1', "Start 1P Game");
 Key multiKey('2', "Start 2P Game");
+Key joinKey('j', "Join 2P Game");
 Key loadKey('l', "Load Game");
 Key knockKey('k', "Knock");
 Key submitKey('s', "Submit");
@@ -71,7 +76,8 @@ const int NUMBERCARDSLOTS = 19;
 CardSlot cardSlots[NUMBERCARDSLOTS];	//1 deck, 1 discard pile, 6 combo piles, 10 player cards
 CardSlot *selectedSlots[2];				//used for selecting specific cards
 //banner messages to display controls and info
-string startMessage = "Gin Rummy - "+startKey.toString()+"\t"+loadKey.toString()+"\t"+quitKey.toString();
+//string startMessage = "Gin Rummy - "+startKey.toString()+"\t"+loadKey.toString()+"\t"+quitKey.toString();
+string startMessage = "Gin Rummy - Login: Enter \t"+quitKey.toString();
 string nameMessage = "Enter your name: ";
 string topBanner,bottomBanner;
 
@@ -195,6 +201,30 @@ void gameLoop(){
 	case LOBBY:
 	{
 		//TODO
+		xmlrpc_c::value status;
+		client.call(SERVERURL, "server.gameStatus", "s", &status, playerName.c_str());
+		switch(xmlrpc_c::value_int(status)){
+			//server is doing a game right now
+			case FULL:
+			{
+				topBanner = "Game server is busy, please wait or try again later.";
+				break;
+			}
+			//server is doing a 2player game and is waiting for player2
+			case WAITING:
+			{
+				topBanner = joinKey.toString();
+				break;
+			}
+			//server is doing nothing
+			case EMPTY:
+			{
+				topBanner = singleKey.toString()+"\t"+multiKey.toString();
+				break;
+			}
+
+		}
+
 		//set top banner to:
 		//		'Start 1P, Start 2P'
 		//		'Join 2P'

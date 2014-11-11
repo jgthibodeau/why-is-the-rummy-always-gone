@@ -13,10 +13,12 @@ class Player
         int score, turnPhase; ///player score, turn phase
         list<Card> Hand;
         bool active;  ///is it player's turn?
+        bool ai;
 
     public:
-        Player(){name="";score=0;turnPhase=0;active=false;}
+        Player(){name="";score=0;turnPhase=0;active=false;ai=false;}
         Player(string name, int score, int turnPhase, bool activity);
+        Player(string name, int score, int turnPhase, bool activity, bool ai);
 
     ///constants for turnPhase
     static const int draw = 0;
