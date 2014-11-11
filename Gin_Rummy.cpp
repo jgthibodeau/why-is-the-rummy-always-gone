@@ -82,7 +82,14 @@ class save : public xmlrpc_c::method{
 public:
 	save(){}
 	void execute(xmlrpc_c::paramList const& paramList, xmlrpc_c::value* const retvalP){
-		//save all the things
+		//TODO save all the things
+		// datebase variable
+		// player1.save();
+		// player2.save();
+		// deck.save();
+		// discardPile.save();
+		// for(int i=0;i<6;i++)
+		// 	combos[i].save();
 	}
 };
 
@@ -90,7 +97,42 @@ class load : public xmlrpc_c::method{
 public:
 	load(){}
 	void execute(xmlrpc_c::paramList const& paramList, xmlrpc_c::value* const retvalP){
-		//load all the things
+		//take in players name
+
+		//TODO load all the things
+		//save all the things
+		// datebase variable
+		// player1.load();
+		// player2.load();
+		// deck.load();
+		// discardPile.load();
+		// for(int i=0;i<6;i++)
+		// 	combos[i].load();
+
+		//return if players name doesn't match one of the players that was saved
+	}
+};
+
+class addPlayer : public xmlrpc_c::method{
+public:
+	addPlayer(){}
+	void execute(xmlrpc_c::paramList const& paramList, xmlrpc_c::value* const retvalP){
+		//TODO
+		//take in players name
+
+		//if no players yet, set player1 to this player
+		//if player1, set player2 to this player
+
+		//return -1 if already 2 players
+		//return number of players
+	}
+};
+
+class quit : public xmlrpc_c::method{
+public:
+	quit(){}
+	void execute(xmlrpc_c::paramList const& paramList, xmlrpc_c::value* const retvalP){
+		//TODO quit/clear stuff
 	}
 };
 
@@ -102,7 +144,7 @@ public:
 		string name = paramList.getString(0);
 		paramList.verifyEnd(1);
 
-		//TODO make deez methods
+		//TODO initialize all the things
 		// player1.initialize();
 		// player2.initialize();
 		// discardPile.initialize();
@@ -459,6 +501,10 @@ int main(int const argc, const char** const argv){
 	myRegistry.addMethod("server.save", saveP);
 	xmlrpc_c::methodPtr const loadP(new load);
 	myRegistry.addMethod("server.load", loadP);
+	xmlrpc_c::methodPtr const addPlayerP(new addPlayer);
+	myRegistry.addMethod("server.load", addPlayerP);
+	xmlrpc_c::methodPtr const quitP(new quit);
+	myRegistry.addMethod("server.load", quitP);
 
 	xmlrpc_c::serverAbyss welcomeToTheAbyss(
 		myRegistry,

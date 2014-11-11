@@ -31,7 +31,7 @@
 #include <sstream>
 #include <algorithm>
 
-
+//locally hosted server url
 #define SERVERURL "http://localhost:8080/RPC2"
 
 using namespace std;
@@ -48,6 +48,8 @@ static const int IN_GAME = 1;
 static const int ENTER_NAME = 2;
 static const int IRWIN = 3;
 static const int STEVE = 4;
+static const int LOBBY = 5;
+static const int PRE_GAME = 6;
 int GAME_STATE = OUT_GAME;
 string playerName="";
 string answer="";
@@ -56,7 +58,10 @@ int turnPhase = -1;
 //display vars
 display gameDisplay;
 //input keys
-Key startKey('n', "New Game");
+Key startKey('n', "Start Game");
+Key singleKey('1', "Start 1P Game");
+Key multiKey('2', "Start 2P Game");
+Key loadKey('l', "Load Game");
 Key knockKey('k', "Knock");
 Key submitKey('s', "Submit");
 Key cancelKey('c', "Cancel");
@@ -66,14 +71,8 @@ const int NUMBERCARDSLOTS = 19;
 CardSlot cardSlots[NUMBERCARDSLOTS];	//1 deck, 1 discard pile, 6 combo piles, 10 player cards
 CardSlot *selectedSlots[2];				//used for selecting specific cards
 //banner messages to display controls and info
-string startMessage = "Gin Rummy - "+startKey.toString()+"\t"+quitKey.toString();
-string drawMessage = "Gin Rummy - Click Deck or Discard Pile to Draw - "+quitKey.toString();
-string playMessage = "Gin Rummy - Click a Card then Discard Pile to Discard - "+knockKey.toString()+" - "+quitKey.toString();
-string knockMessage = "Gin Rummy - Click a Card then a Combo Slot to Play it - Click a Card then Discard Pile to Knock - "+cancelKey.toString()+" - "+quitKey.toString();
-string notTurnMessage = "Gin Rummy - Opponent's Turn - "+quitKey.toString();
+string startMessage = "Gin Rummy - "+startKey.toString()+"\t"+loadKey.toString()+"\t"+quitKey.toString();
 string nameMessage = "Enter your name: ";
-string dontComboMessage = "Those cards don't combo!";
-string badDeadwoodMessage = "You have too much remaining deadwood!";
 string topBanner,bottomBanner;
 
 // Signal Subroutine for Window Resize
@@ -123,6 +122,7 @@ void gameLoop(){
 	//regular game
 	switch(GAME_STATE){
 	case IRWIN:
+	{
 		topBanner = "Professor Irwin? Prove it! What does an empty cement mixer truck weigh, measured in units of US dollar bills?";
 		bottomBanner = "Answer: "+answer;
 		if(key == '\n'){
@@ -145,8 +145,10 @@ void gameLoop(){
 		else if(isdigit(key))//key > 31 && key < 127)
 			answer = answer + key;
 
-	break;
+		break;
+	}
 	case OUT_GAME:
+	{
 		topBanner = startMessage;
 		playerName = "";
 		answer = "";
@@ -156,7 +158,9 @@ void gameLoop(){
 			GAME_STATE = ENTER_NAME;
 		}
 		break;
+	}
 	case ENTER_NAME:
+	{
 		//write startMessage
 		topBanner = startMessage;
 		//prompt for name
@@ -175,16 +179,8 @@ void gameLoop(){
 				GAME_STATE = OUT_GAME;
 			}
 			else{
-				GAME_STATE = IN_GAME;
+				GAME_STATE = LOBBY;
 				bottomBanner = "";
-				//TODO
-				//tell server this players name
-				//go to wait or in game state
-				xmlrpc_c::value result;
-				client.call(SERVERURL, "server.initialize", "s", &result, playerName.c_str());
-				xmlrpc_c::value initialCards;
-				client.call(SERVERURL, "server.respondToInput", "iis", &initialCards,' ',-1, playerName.c_str());
-				decipherCards(initialCards);
 			}
 		}
 
@@ -195,7 +191,39 @@ void gameLoop(){
 		else if(isalnum(key))//key > 31 && key < 127)
 			playerName = playerName + key;
 		break;
+	}
+	case LOBBY:
+	{
+		//TODO
+		//set top banner to:
+		//		'Start 1P, Start 2P'
+		//		'Join 2P'
+		//		'Game already in session, please wait'
+		//if singleKey pushed
+			//send players name to the server
+			//send a name for the cpu player
+		//if multiKey pushed
+			//send players name to the server
+			//if there are 2 players, initialize the game
+			//if there is 1 player, wait for second player
+		//if loadKey pushed
+			//load from the server with players name
+
+		xmlrpc_c::value result;
+		client.call(SERVERURL, "server.initialize", "s", &result, playerName.c_str());
+		xmlrpc_c::value initialCards;
+		client.call(SERVERURL, "server.respondToInput", "iis", &initialCards,' ',-1, playerName.c_str());
+		decipherCards(initialCards);
+		GAME_STATE = IN_GAME;
+		break;
+	}
+	case PRE_GAME:
+	{
+		//TODO
+		//wait here when starting 2P game until second player has been added
+	}
 	case IN_GAME:
+	{
 		//it not our turn, poll for info
 		if(turnPhase == -1){
 			xmlrpc_c::value cards;
@@ -213,7 +241,8 @@ void gameLoop(){
 			client.call(SERVERURL, "server.respondToInput", "iis", &cards,key,slotNum, playerName.c_str());
 			decipherCards(cards);
 		}
-	break;
+		break;
+	}
 	}
 }
 
