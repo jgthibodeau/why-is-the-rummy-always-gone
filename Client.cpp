@@ -77,8 +77,11 @@ CardSlot cardSlots[NUMBERCARDSLOTS];	//1 deck, 1 discard pile, 6 combo piles, 10
 CardSlot *selectedSlots[2];				//used for selecting specific cards
 //banner messages to display controls and info
 //string startMessage = "Gin Rummy - "+startKey.toString()+"\t"+loadKey.toString()+"\t"+quitKey.toString();
-string startMessage = "Gin Rummy - Login: Enter \t"+quitKey.toString();
+string startMessage = "Gin Rummy - Login (Enter) \t"+quitKey.toString();
 string nameMessage = "Enter your name: ";
+string serverFullMessage = "Game server is busy, please wait or try again later.\t"+quitKey.toString();
+string serverWaitingMessage = "Waiting for Player 2\t"+joinKey.toString()+"\t"+quitKey.toString();
+string serverEmptyMessage = singleKey.toString()+"\t"+multiKey.toString()+"\t"+quitKey.toString();
 string topBanner,bottomBanner;
 
 // Signal Subroutine for Window Resize
@@ -201,34 +204,32 @@ void gameLoop(){
 	case LOBBY:
 	{
 		//TODO
+		//if player is already in a game, go directly to that game
+
+		//otherwise, let the player start/join a game
 		xmlrpc_c::value status;
 		client.call(SERVERURL, "server.gameStatus", "s", &status, playerName.c_str());
 		switch(xmlrpc_c::value_int(status)){
 			//server is doing a game right now
 			case FULL:
 			{
-				topBanner = "Game server is busy, please wait or try again later.";
+				topBanner = serverFullMessage;
 				break;
 			}
 			//server is doing a 2player game and is waiting for player2
 			case WAITING:
 			{
-				topBanner = joinKey.toString();
+				topBanner = serverWaitingMessage;
 				break;
 			}
 			//server is doing nothing
 			case EMPTY:
 			{
-				topBanner = singleKey.toString()+"\t"+multiKey.toString();
+				topBanner = serverEmptyMessage;
 				break;
 			}
-
 		}
 
-		//set top banner to:
-		//		'Start 1P, Start 2P'
-		//		'Join 2P'
-		//		'Game already in session, please wait'
 		//if singleKey pushed
 			//send players name to the server
 			//send a name for the cpu player
@@ -239,12 +240,14 @@ void gameLoop(){
 		//if loadKey pushed
 			//load from the server with players name
 
-		xmlrpc_c::value result;
-		client.call(SERVERURL, "server.initialize", "s", &result, playerName.c_str());
-		xmlrpc_c::value initialCards;
-		client.call(SERVERURL, "server.respondToInput", "iis", &initialCards,' ',-1, playerName.c_str());
-		decipherCards(initialCards);
-		GAME_STATE = IN_GAME;
+		if(false){
+			xmlrpc_c::value result;
+			client.call(SERVERURL, "server.initialize", "s", &result, playerName.c_str());
+			xmlrpc_c::value initialCards;
+			client.call(SERVERURL, "server.respondToInput", "iis", &initialCards,' ',-1, playerName.c_str());
+			decipherCards(initialCards);
+			GAME_STATE = IN_GAME;
+		}
 		break;
 	}
 	case PRE_GAME:

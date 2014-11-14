@@ -21,7 +21,7 @@ public:
 	// Extractors.
 	char key() { return keyVal; }
 	string text() { return textVal; }
-	string toString() { return textVal+": "+keyVal; }
+	string toString() { return textVal+" ("+keyVal+")"; }
 
 	// Setters
 	void setKey(char c){ keyVal = c; }

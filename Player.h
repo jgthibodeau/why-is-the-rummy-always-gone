@@ -35,6 +35,7 @@ class Player
     void setTurnPhase(int newPhase) {turnPhase = newPhase;}
     void setActivity(bool activity) {active = activity;}
     bool isActive() {return active;}
+    bool isAI() {return ai;}
 
     ///set name
     void setName(string newName) {name = newName;}

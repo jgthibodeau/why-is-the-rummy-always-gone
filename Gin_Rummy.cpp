@@ -46,6 +46,7 @@ char key;
 static const int FULL = 0;
 static const int WAITING = 1;
 static const int EMPTY = 2;
+int SERVER_STATUS = EMPTY;
 
 //game vars
 Player player1;
@@ -80,52 +81,35 @@ string topBanner,bottomBanner;
 
 //reset highlights and selected cards
 void resetSelectedSlots();
+void save();
+void load();
+void initialize();
 
 //returns the current game status (game going, waiting for p2, no game)
 class gameStatus : public xmlrpc_c::method{
 public:
 	gameStatus(){}
 	void execute(xmlrpc_c::paramList const& paramList, xmlrpc_c::value* const retvalP){
-		if(player1.getName() == "")
-			*retvalP = xmlrpc_c::value_int(EMPTY);
-		else if(player2.getName() == "")
-			*retvalP = xmlrpc_c::value_int(WAITING);
-		else
-			*retvalP = xmlrpc_c::value_int(FULL);
+		*retvalP = xmlrpc_c::value_int(SERVER_STATUS);
 	}
 };
 
 //TODO eventually!
-class save : public xmlrpc_c::method{
+class remoteSave : public xmlrpc_c::method{
 public:
-	save(){}
+	remoteSave(){}
 	void execute(xmlrpc_c::paramList const& paramList, xmlrpc_c::value* const retvalP){
-		//TODO save all the things
-		// datebase variable
-		// player1.save();
-		// player2.save();
-		// deck.save();
-		// discardPile.save();
-		// for(int i=0;i<6;i++)
-		// 	combos[i].save();
+		save();
 	}
 };
 
-class load : public xmlrpc_c::method{
+class remoteLoad : public xmlrpc_c::method{
 public:
-	load(){}
+	remoteLoad(){}
 	void execute(xmlrpc_c::paramList const& paramList, xmlrpc_c::value* const retvalP){
 		//take in players name
 
-		//TODO load all the things
-		//save all the things
-		// datebase variable
-		// player1.load();
-		// player2.load();
-		// deck.load();
-		// discardPile.load();
-		// for(int i=0;i<6;i++)
-		// 	combos[i].load();
+		load();
 
 		//return if players name doesn't match one of the players that was saved
 	}
@@ -135,14 +119,28 @@ class addPlayer : public xmlrpc_c::method{
 public:
 	addPlayer(){}
 	void execute(xmlrpc_c::paramList const& paramList, xmlrpc_c::value* const retvalP){
-		//TODO
 		//take in players name
 
-		//if no players yet, set player1 to this player
-		//if player1, set player2 to this player
+		switch(SERVER_STATUS){
+			case(EMPTY):
+				//set player1 to this player
+				SERVER_STATUS = WAITING;
+			break;
+			case(WAITING):
+				//set player2 to this player and initialize game
+				SERVER_STATUS = FULL;
+			break;
+		}
+	}
+};
 
-		//return -1 if already 2 players
-		//return number of players
+class checkPlayer : public xmlrpc_c::method{
+public:
+	checkPlayer(){}
+	void execute(xmlrpc_c::paramList const& paramList, xmlrpc_c::value* const retvalP){
+		//take in players name
+
+		//return if player is player1 or player2
 	}
 };
 
@@ -151,52 +149,7 @@ public:
 	quit(){}
 	void execute(xmlrpc_c::paramList const& paramList, xmlrpc_c::value* const retvalP){
 		//TODO quit/clear stuff
-	}
-};
-
-//set us up the gamez
-class initialize : public xmlrpc_c::method{
-public:
-	initialize(){}
-	void execute(xmlrpc_c::paramList const& paramList, xmlrpc_c::value* const retvalP){
-		string name = paramList.getString(0);
-		paramList.verifyEnd(1);
-
-		//TODO initialize all the things
-		// player1.initialize();
-		// player2.initialize();
-		// discardPile.initialize();
-		// for(int i=0;i<6;i++)
-		// 	combos[i].initialize();
-
-		deck.initialize();
-		deck.shuffle();
-		discardPile.initialize();
-		//TODO decide first player
-		curPlayer = &player1;
-		//Deal player cards
-		for(int i=0;i<10;i++){
-			player1.addCard(deck.drawCard());
-			player1.setTurnPhase(Player::draw);
-			player1.setName(name);
-		}
-		for(int i=0;i<10;i++){
-			player2.addCard(deck.drawCard());
-			player2.setTurnPhase(Player::draw);
-		}
-		discardPile.addCard(deck.drawCard());
-
-		//initialize cardslots
-		cardSlots[0] = CardSlot(0,0,0,0,CardSlot::deck);		//1 deck
-		cardSlots[1] = CardSlot(0,0,0,0,CardSlot::discard);	//1 discard pile
-		for(int i=0;i<11;i++){									//11 player cards
-			cardSlots[2+i] = CardSlot(0,0,0,0, CardSlot::player, i);
-		}
-		for(int i=0;i<6;i++){									//6 combo cards
-			cardSlots[13+i] = CardSlot(0,0,0,0, CardSlot::combo, i);
-		}
-
-		*retvalP = xmlrpc_c::value_boolean(true);
+		SERVER_STATUS = EMPTY;
 	}
 };
 
@@ -513,16 +466,16 @@ int main(int const argc, const char** const argv){
 	xmlrpc_c::registry myRegistry;
 	xmlrpc_c::methodPtr const respondToInputP(new respondToInput);
 	myRegistry.addMethod("server.respondToInput", respondToInputP);
-	xmlrpc_c::methodPtr const initializeP(new initialize);
-	myRegistry.addMethod("server.initialize", initializeP);
-	xmlrpc_c::methodPtr const saveP(new save);
-	myRegistry.addMethod("server.save", saveP);
-	xmlrpc_c::methodPtr const loadP(new load);
-	myRegistry.addMethod("server.load", loadP);
+	xmlrpc_c::methodPtr const remoteSaveP(new remoteSave);
+	myRegistry.addMethod("server.save", remoteSaveP);
+	xmlrpc_c::methodPtr const remoteLoadP(new remoteLoad);
+	myRegistry.addMethod("server.load", remoteLoadP);
 	xmlrpc_c::methodPtr const addPlayerP(new addPlayer);
-	myRegistry.addMethod("server.load", addPlayerP);
+	myRegistry.addMethod("server.addPlayer", addPlayerP);
+	xmlrpc_c::methodPtr const checkPlayerP(new checkPlayer);
+	myRegistry.addMethod("server.checkPlayer", checkPlayerP);
 	xmlrpc_c::methodPtr const quitP(new quit);
-	myRegistry.addMethod("server.load", quitP);
+	myRegistry.addMethod("server.quit", quitP);
 	xmlrpc_c::methodPtr const gameStatusP(new gameStatus);
 	myRegistry.addMethod("server.gameStatus", gameStatusP);
 
@@ -543,4 +496,63 @@ void resetSelectedSlots(){
 		(*selectedSlots[1]).setHighlight(false);
 	selectedSlots[0] = NULL;
 	selectedSlots[1] = NULL;
+}
+
+void save(){
+	//TODO save all the things
+	// datebase variable
+	// player1.save();
+	// player2.save();
+	// deck.save();
+	// discardPile.save();
+	// for(int i=0;i<6;i++)
+	// 	combos[i].save();
+}
+
+void load(){
+	//TODO load all the things
+	//save all the things
+	// datebase variable
+	// player1.load();
+	// player2.load();
+	// deck.load();
+	// discardPile.load();
+	// for(int i=0;i<6;i++)
+	// 	combos[i].load();
+}
+
+//set us up the gamez
+void initialize(){
+	//TODO initialize all the things
+	// player1.initialize();
+	// player2.initialize();
+	// discardPile.initialize();
+	// for(int i=0;i<6;i++)
+	// 	combos[i].initialize();
+
+	deck.initialize();
+	deck.shuffle();
+	discardPile.initialize();
+	//TODO decide first player
+	curPlayer = &player1;
+	//Deal player cards
+	for(int i=0;i<10;i++){
+		player1.addCard(deck.drawCard());
+		player1.setTurnPhase(Player::draw);
+	}
+	for(int i=0;i<10;i++){
+		player2.addCard(deck.drawCard());
+		player2.setTurnPhase(Player::draw);
+	}
+	discardPile.addCard(deck.drawCard());
+
+	//initialize cardslots
+	cardSlots[0] = CardSlot(0,0,0,0,CardSlot::deck);		//1 deck
+	cardSlots[1] = CardSlot(0,0,0,0,CardSlot::discard);		//1 discard pile
+	for(int i=0;i<11;i++){									//11 player cards
+		cardSlots[2+i] = CardSlot(0,0,0,0, CardSlot::player, i);
+	}
+	for(int i=0;i<6;i++){									//6 combo cards
+		cardSlots[13+i] = CardSlot(0,0,0,0, CardSlot::combo, i);
+	}
 }
