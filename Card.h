@@ -1,6 +1,10 @@
 #ifndef CARD_H
 #define CARD_H
 #include <string>
+#include <stdlib.h>
+#include <sstream>
+#include <iostream>
+
 using namespace std;
 //#include "Player.h"
 class Player;
@@ -10,17 +14,19 @@ private:
 	int suitVal;
 	int valueVal;
 	int pointsVal; 
-	Player* owner;
+	string owner;
 public: 
-	Card(){suitVal=0;valueVal=0;pointsVal=0;owner=NULL;}
+	Card(){suitVal=0;valueVal=0;pointsVal=0;owner="";}
 	Card(int cardSuit, int cardValue, int cardPoints);
 	string toString();
-	Card(int cardSuit, int cardValue, int cardPoints, Player* p);
-	void makeOwner(Player* play);
+	Card(int cardSuit, int cardValue, int cardPoints, string p);
+	void makeOwner(string play);
 	int suit(){return suitVal;}
 	int value(){return valueVal;}
 	int points(){return pointsVal;} 
-	Player* whoOwns(){return owner;}
+	string whoOwns(){return owner;}
 	bool isValid(){return (suitVal!=0) && (valueVal!=0);}
+	string save();		
+	void load(string serial);
 };
 #endif

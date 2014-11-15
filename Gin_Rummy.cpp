@@ -36,12 +36,10 @@
 #include <xmlrpc-c/registry.hpp>
 #include <xmlrpc-c/server_abyss.hpp>
 
-//#include <iostream>
-//#include <cstdlib>
+
 #include <cstring>
-//#include <sstream>
 #include <cstddef>
-//#include <stdio.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <sqlite3.h> 
 
@@ -90,8 +88,8 @@ string topBanner,bottomBanner;
 
 //reset highlights and selected cards
 void resetSelectedSlots();
-void save();
-void load();
+void save(int ID, string name, string classType, string data);
+string load(string name);
 void initialize();
 
 //returns the current game status (game going, waiting for p2, no game)
@@ -108,7 +106,6 @@ class remoteSave : public xmlrpc_c::method{
 public:
 	remoteSave(){}
 	void execute(xmlrpc_c::paramList const& paramList, xmlrpc_c::value* const retvalP){
-		save();
 	}
 };
 
@@ -117,8 +114,6 @@ public:
 	remoteLoad(){}
 	void execute(xmlrpc_c::paramList const& paramList, xmlrpc_c::value* const retvalP){
 		//take in players name
-
-		load();
 
 		//return if players name doesn't match one of the players that was saved
 	}
@@ -471,7 +466,24 @@ public:
 	}
 };
 
+// Function called by sql query
+// Stores data in *data pointer
+static int callback(void *data, int argc, char **argv, char **azColName) {
+  strcpy((char*)data, argv[0]);	  
+  return 0;
+ }
+
+
 int main(int const argc, const char** const argv){
+
+	Card c1 = Card(1,2,3);
+	Card c2 = Card(2,3,4);
+	Player player1 = Player("jimbo",10,2,false,false);
+	player1.addCard(c1);
+	player1.addCard(c2);
+	save(1,"player1","Player",player1.save());
+
+
 	xmlrpc_c::registry myRegistry;
 	xmlrpc_c::methodPtr const respondToInputP(new respondToInput);
 	myRegistry.addMethod("server.respondToInput", respondToInputP);
@@ -507,7 +519,49 @@ void resetSelectedSlots(){
 	selectedSlots[1] = NULL;
 }
 
-void save(){
+void save(int ID, string name, string classType, string data){
+	sqlite3 *db;
+	char *dErrMsg = 0;
+	int rc;
+	const char* sql;  
+
+	rc = sqlite3_open("datebase.db", &db);
+	if( rc ){
+	  fprintf(stderr, "Can't open database: %s\n", sqlite3_errmsg(db));
+	  exit(0);
+	}else{
+	  fprintf(stderr, "Opened database successfully\n");
+	}
+
+	sql = "CREATE TABLE GAME("  \
+	     "ID INT PRIMARY KEY NOT NULL," \
+	     "OBJECT_NAME TEXT NOT NULL," \
+	 "OBJECT_TYPE TEXT NOT NULL," \
+	 "OBJECT_VALUE TEXT NOT NULL);";
+
+	rc = sqlite3_exec(db, sql, NULL, 0, &dErrMsg);
+	if( rc != SQLITE_OK ){
+	fprintf(stderr, "SQL error: %s\n", dErrMsg);
+	  sqlite3_free(dErrMsg);
+	}else{
+	  fprintf(stdout, "Table created successfully\n");
+	}
+
+	// Insert serialized version of player1 object to database
+	ostringstream sql_string;
+	sql_string << "INSERT INTO GAME VALUES (" << ID << ", '" << name << "', '" << classType << "', '"<< data << "');";
+	sql = (sql_string.str()).c_str();
+	fprintf(stdout, "%s\n", sql);
+	rc = sqlite3_exec(db, sql, callback, 0, &dErrMsg);
+	if( rc != SQLITE_OK ){
+	  fprintf(stderr, "SQL error: %s\n", dErrMsg);
+	  sqlite3_free(dErrMsg);
+	}else{
+	  fprintf(stdout, "Records created successfully\n");
+	}
+
+
+	sqlite3_close(db);
 	//TODO save all the things
 	// datebase variable
 	// player1.save();
@@ -518,7 +572,36 @@ void save(){
 	// 	combos[i].save();
 }
 
-void load(){
+string load(string name){
+	sqlite3 *db;
+	char *dErrMsg = 0;
+	int rc;
+	const char* sql;
+	char data[256]; 
+
+	rc = sqlite3_open("datebase.db", &db);
+	if( rc ){
+	  fprintf(stderr, "Can't open database: %s\n", sqlite3_errmsg(db));
+	  exit(0);
+	}else{
+	  fprintf(stderr, "Opened database successfully\n");
+	}
+
+	  // Read serialied version of player1 object from database
+	ostringstream sql_string;
+	sql_string << "SELECT OBJECT_VALUE from GAME WHERE OBJECT_NAME='" << name << "';";
+	sql = (sql_string.str()).c_str();
+	rc = sqlite3_exec(db, sql, callback, (void*)data, &dErrMsg);
+	if( rc != SQLITE_OK ){
+	  fprintf(stderr, "SQL error: %s\n", dErrMsg);
+	  sqlite3_free(dErrMsg);
+	}else{
+	  fprintf(stdout, "Operation done successfully\n");
+	}
+
+	sqlite3_close(db);
+
+	return data;
 	//TODO load all the things
 	//save all the things
 	// datebase variable

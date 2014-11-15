@@ -4,6 +4,9 @@
 #include <string>
 #include <list>
 #include "Card.h"
+#include <sstream>
+#include <iostream>
+#include <stdlib.h>
 using namespace std;
 
 class Player
@@ -63,11 +66,11 @@ class Player
 
     //set all vars to nothing!
     void initialize();
+
     //convert to string for saving in datebase
     string save();
-    //parse string and set variables
-    void load();
-
+    //load player from database
+    void load(string serial);
 };
 
 #endif
