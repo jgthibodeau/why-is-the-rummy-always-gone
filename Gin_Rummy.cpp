@@ -36,6 +36,15 @@
 #include <xmlrpc-c/registry.hpp>
 #include <xmlrpc-c/server_abyss.hpp>
 
+//#include <iostream>
+//#include <cstdlib>
+#include <cstring>
+//#include <sstream>
+#include <cstddef>
+//#include <stdio.h>
+#include <stdlib.h>
+#include <sqlite3.h> 
+
 using namespace std;
 
 /* TODO Move vars and function declarations to a header file */

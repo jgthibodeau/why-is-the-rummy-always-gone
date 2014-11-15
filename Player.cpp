@@ -20,6 +20,57 @@ Player::Player(string name, int score, int turnPhase, bool activity, bool ai)
     ai = ai;
 }
 
+void initialize(){
+	score = 0;
+	turnPhase = 0;
+	activity = false;
+	ai = false;
+	Hand.clear();
+}
+
+string save(){
+    string s = "name=" + name + ";score=" + score + ";turnPhase=" + turnPhase + ";activity=" + activity + ";ai=" + ai + ";";
+    //TODO add in cards from Hand
+    for (list<Card>::iterator it = Hand.begin(); it != Hand.end(); ++it){
+        s += "card="+(*it).save()+";";
+    }
+    return s;
+}
+
+void load(){
+	//this.initialize();
+
+    string delimeter = ";";
+    string delimeter2 = "=";
+    string full, name, var;
+    int index1 = 0, index2 = 0;
+    while ((index1 = serial.find(delimeter)) != -1) {
+        full = serial.substr(0, index1);
+        index2 = full.find(delimiter2);
+        name = full.substr(0, index2);
+        var = full.substr(index2+1,full.size());
+
+	    if (name == "name") {
+	    	name = var.c_str();
+	    } else if (name == "score") {
+	    	score = atoi(var.c_str());
+	    } else if (name == "turnPhase") {
+	    	turnPhase = atoi(var.c_str());
+	    } else if (name == "activity") {
+	    	activity = var.c_str()=="true";	//boolean?
+	    } else if (name == "ai") {
+	    	ai = var.c_str()=="true";	//boolean?
+	    } else if (name == "card") {
+	    	//make a card
+	    	Card c = Card();
+	    	//load this card and push it into the hand
+	    	Hand.push_back(c.load(var));
+	    } else {
+	    	cout << "error" << endl;
+	    }
+    	serial.erase(0, index1 + delimeter.length());
+    }
+}
 
 ///calculates player score
 int Player::calculateScore(){

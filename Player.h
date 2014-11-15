@@ -61,6 +61,12 @@ class Player
     ///swaps two cards
     void swapCard(int index1, int index2);
 
+    //set all vars to nothing!
+    void initialize();
+    //convert to string for saving in datebase
+    string save();
+    //parse string and set variables
+    void load();
 
 };
 
