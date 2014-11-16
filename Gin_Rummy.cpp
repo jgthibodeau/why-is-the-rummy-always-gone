@@ -181,6 +181,10 @@ public:
 		}
 		//if this player's turn
 		if(playerName == (*curPlayer).getName()){
+			//temporarily hold on to current player and current turn phase
+			Player* tempPlayer = curPlayer;
+			int tempPhase = (*curPlayer).getTurnPhase();
+
 			//set up selected slots
 			if(cardSlotIndex >= 0){
 				//get card clicked if any
@@ -395,6 +399,10 @@ public:
 					}
 				break;
 			}
+
+			//if turnphase changed or player changed, save the game
+			if(tempPlayer != curPlayer || tempPhase != (*curPlayer).getTurnPhase())
+				saveAll();
 		}
 
 		else{
@@ -514,6 +522,8 @@ int main(int const argc, const char** const argv){
 	// dp2.load(load("dp1"));
 	// cout << dp2.save() << endl;
 
+	//try to load everything if it exists
+	loadAll();
 
 	xmlrpc_c::registry myRegistry;
 	xmlrpc_c::methodPtr const respondToInputP(new respondToInput);
@@ -636,15 +646,49 @@ string load(string name){
 }
 
 void loadAll(){
-	player1.load(load("player1"));
-	player2.load(load("player2"));
-	deck.load(load("deck"));
-	discardPile.load(load("discardPile"));
+	//check if game table exists
+	sqlite3 *db;
+	char *dErrMsg = 0;
+	int rc;
+	const char* sql;
+	char data[2056]; 
 
-	for(int i=0;i<6;i++){
-		stringstream comboName;
-		comboName << "combo" << i;
-		combos[i].load(load(comboName.str()));
+	rc = sqlite3_open("datebase.db", &db);
+	if( rc ){
+	  fprintf(stderr, "Can't open database: %s\n", sqlite3_errmsg(db));
+	  exit(0);
+	}else{
+	  fprintf(stderr, "Opened database successfully\n");
+	}
+
+	string sql_string = "select count(type) from sqlite_master where type='table' and name='GAME'";
+	sql = sql_string.c_str();
+
+	rc = sqlite3_exec(db, sql, callback, (void*)data, &dErrMsg);
+	if( rc != SQLITE_OK ){
+	  fprintf(stderr, "SQL error: %s\n", dErrMsg);
+	  sqlite3_free(dErrMsg);
+	}else{
+	  cout << "LoadAll done successfully\n" << endl;
+	}
+
+	sqlite3_close(db);
+
+	cout << data << endl;
+	exit(0);
+
+	//if table exists, load errythang
+	if(data != 0){
+		player1.load(load("player1"));
+		player2.load(load("player2"));
+		deck.load(load("deck"));
+		discardPile.load(load("discardPile"));
+
+		for(int i=0;i<6;i++){
+			stringstream comboName;
+			comboName << "combo" << i;
+			combos[i].load(load(comboName.str()));
+		}
 	}
 }
 
