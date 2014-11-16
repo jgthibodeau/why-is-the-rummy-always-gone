@@ -46,7 +46,7 @@ char key;
 //enumerable for game state
 static const int OUT_GAME = 0;
 static const int IN_GAME = 1;
-static const int ENTER_NAME = 2;
+static const int LOGIN = 2;
 static const int IRWIN = 3;
 static const int STEVE = 4;
 static const int LOBBY = 5;
@@ -71,18 +71,19 @@ Key loadKey('l', "Load Game");
 Key knockKey('k', "Knock");
 Key submitKey('s', "Submit");
 Key cancelKey('c', "Cancel");
-Key quitKey('q', "Quit");
+Key quitKey('q', "Quit Game");
+Key closeKey('x', "Save and Exit");
 //positions to display cards
 const int NUMBERCARDSLOTS = 19;
 CardSlot cardSlots[NUMBERCARDSLOTS];	//1 deck, 1 discard pile, 6 combo piles, 10 player cards
 CardSlot *selectedSlots[2];				//used for selecting specific cards
 //banner messages to display controls and info
-//string startMessage = "Gin Rummy - "+startKey.toString()+"\t"+loadKey.toString()+"\t"+quitKey.toString();
-string startMessage = "Gin Rummy - Login (Enter) \t"+quitKey.toString();
+string startMessage = "Gin Rummy - Login (Enter) "+closeKey.toString();
 string nameMessage = "Enter your name: ";
-string serverFullMessage = "Game server is busy, please wait or try again later.\t"+quitKey.toString();
-string serverWaitingMessage = "Waiting for Player 2\t"+joinKey.toString()+"\t"+quitKey.toString();
-string serverEmptyMessage = singleKey.toString()+"\t"+multiKey.toString()+"\t"+quitKey.toString();
+string serverFullMessage = "Game server is busy, please wait or try again later. "+closeKey.toString();
+string serverWaitingMessage = "Waiting for Player 2 "+joinKey.toString()+" "+closeKey.toString();
+//TODO reenable multikey
+string serverEmptyMessage = singleKey.toString()+/*" "+multiKey.toString()+*/" "+closeKey.toString();
 string topBanner,bottomBanner;
 
 // Signal Subroutine for Window Resize
@@ -125,8 +126,8 @@ void gameLoop(){
 	// calls the game display to get input
 	char key = gameDisplay.captureInput();
 
-	//if quitKey pressed
-	if(key == quitKey.key())
+	//if closeKey pressed, exit the client
+	if(key == closeKey.key())
 		std::exit(0);
 
 	//regular game
@@ -164,12 +165,12 @@ void gameLoop(){
 		answer = "";
 		//if startKey pushed
 		if(key == startKey.key()){
-			//go to ENTER_NAME state
-			GAME_STATE = ENTER_NAME;
+			//go to LOGIN state
+			GAME_STATE = LOGIN;
 		}
 		break;
 	}
-	case ENTER_NAME:
+	case LOGIN:
 	{
 		//write startMessage
 		topBanner = startMessage;
@@ -189,6 +190,7 @@ void gameLoop(){
 				GAME_STATE = OUT_GAME;
 			}
 			else{
+				//TODO send name to server to check if user is already logged in
 				GAME_STATE = LOBBY;
 				bottomBanner = "";
 			}
@@ -208,7 +210,6 @@ void gameLoop(){
 		xmlrpc_c::value playerInGame;
 		client.call(SERVERURL, "server.checkPlayer", "s", &playerInGame, playerName.c_str());
 		if(xmlrpc_c::value_boolean(playerInGame)){
-
 			xmlrpc_c::value initialCards;
 			client.call(SERVERURL, "server.respondToInput", "iis", &initialCards,' ',-1, playerName.c_str());
 			decipherCards(initialCards);
@@ -270,6 +271,13 @@ void gameLoop(){
 	}
 	case IN_GAME:
 	{
+
+		//if quitKey pressed, exit client and tell server to kill the game
+		if(key == quitKey.key()){
+			xmlrpc_c::value result;
+			client.call(SERVERURL, "server.quit", "", &result);
+			std::exit(0);
+		}
 		//if game ended
 		xmlrpc_c::value status;
 		client.call(SERVERURL, "server.gameStatus", "s", &status, playerName.c_str());

@@ -32,6 +32,7 @@ class Player
     ///set and get score
     int getScore() {return score;}
     void setScore(int newScore) {score = newScore;}
+    void setAI(bool a) {ai = a;}
 
     ///set and get turn information
     int getTurnPhase() {return turnPhase;}
