@@ -228,37 +228,38 @@ void gameLoop(){
 				//server is doing a 2player game and is waiting for player2
 				case WAITING:
 				{
+					if(key == joinKey.key()){
+						//TODO join game
+					}
 					topBanner = serverWaitingMessage;
 					break;
 				}
 				//server is doing nothing
 				case EMPTY:
 				{
-					xmlrpc_c::value result;
-					client.call(SERVERURL, "server.addPlayer", "s", &result, playerName.c_str());
-					xmlrpc_c::value result2;
-					client.call(SERVERURL, "server.addPlayer", "s", &result2, "");
+					topBanner = serverEmptyMessage;
+				
+					if(key == singleKey.key()){
+						xmlrpc_c::value result;
+						client.call(SERVERURL, "server.addPlayer", "s", &result, playerName.c_str());
+						xmlrpc_c::value result2;
+						client.call(SERVERURL, "server.addPlayer", "s", &result2, "");
 
-					xmlrpc_c::value initialCards;
-					client.call(SERVERURL, "server.respondToInput", "iis", &initialCards,' ',-1, playerName.c_str());
-					decipherCards(initialCards);
-					GAME_STATE = IN_GAME;
+						xmlrpc_c::value initialCards;
+						client.call(SERVERURL, "server.respondToInput", "iis", &initialCards,' ',-1, playerName.c_str());
+						decipherCards(initialCards);
+						GAME_STATE = IN_GAME;
+					}
+					else if(key == multiKey.key()){
+						//TODO send players name to the server
+						//if there are 2 players, initialize the game
+						//if there is 1 player, wait for second player
+					}
 
-					//topBanner = serverEmptyMessage;
 					break;
 				}
 			}
 		}
-
-		//if singleKey pushed
-			//send players name to the server
-			//send a name for the cpu player
-		//if multiKey pushed
-			//send players name to the server
-			//if there are 2 players, initialize the game
-			//if there is 1 player, wait for second player
-		//if loadKey pushed
-			//load from the server with players name
 
 		break;
 	}
@@ -273,7 +274,6 @@ void gameLoop(){
 		xmlrpc_c::value status;
 		client.call(SERVERURL, "server.gameStatus", "s", &status, playerName.c_str());
 		if(xmlrpc_c::value_int(status) == EMPTY){
-			topBanner = "Returning to lobby in 5 seconds";
 			GAME_STATE = LOBBY;
 		}
 		//it not our turn, poll for info
