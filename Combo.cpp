@@ -81,3 +81,35 @@ bool Combo::addCard(Card c){  //returns true if a card is sucessefully added, re
 	}
 }
 	
+string Combo::save(){
+    ostringstream s;
+    for (deque<Card>::iterator it = comboSet.begin(); it != comboSet.end(); ++it){
+        s <<"card="<<(*it).save()<<";";
+    }
+    return s.str();
+}
+
+void Combo::load(string serial){
+    initialize();
+
+    string delimeter = ";";
+    string delimeter2 = "=";
+    string full, name, var;
+    int index1 = 0, index2 = 0;
+    while ((index1 = serial.find(delimeter)) != -1) {
+        full = serial.substr(0, index1);
+        index2 = full.find(delimeter2);
+        name = full.substr(0, index2);
+        var = full.substr(index2+1,full.size());
+		if (name == "card") {
+            //make a card
+            Card c = Card();
+            //load this card and push it into the hand
+            c.load(var);
+            comboSet.push_back(c);
+        } else {
+            cout << "error" << endl;
+        }
+        serial.erase(0, index1 + delimeter.length());
+    }
+}

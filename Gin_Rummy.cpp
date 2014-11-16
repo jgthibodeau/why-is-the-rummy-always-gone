@@ -88,8 +88,10 @@ string topBanner,bottomBanner;
 
 //reset highlights and selected cards
 void resetSelectedSlots();
-void save(int ID, string name, string classType, string data);
+void save(string name, string classType, string data);
+void saveAll();
 string load(string name);
+void loadAll();
 void initialize();
 
 //returns the current game status (game going, waiting for p2, no game)
@@ -476,12 +478,41 @@ static int callback(void *data, int argc, char **argv, char **azColName) {
 
 int main(int const argc, const char** const argv){
 
-	Card c1 = Card(1,2,3);
-	Card c2 = Card(2,3,4);
-	Player player1 = Player("jimbo",10,2,false,false);
-	player1.addCard(c1);
-	player1.addCard(c2);
-	save(1,"player1","Player",player1.save());
+	//testing datebase saves and loads
+	// Card c1 = Card(1,2,3);
+	// Card c2 = Card(2,2,4);
+	// Combo comb1 = Combo(); 
+	// comb1.addCard(c1); 
+	// comb1.addCard(c2); 
+	// Deck d1 = Deck();  
+	// d1.shuffle(); 
+	// DiscardPile dp1 = DiscardPile();
+	// dp1.addCard(c1);
+	// dp1.addCard(c2); 
+	// Player player = Player("jimbo",10,2,false,false);
+	// player.addCard(c1);
+	// player.addCard(c2); 
+
+	// save(1,"player1","Player",player.save());
+	// save(2,"comb1","Combo",comb1.save()); 
+	// save(3,"d1","Deck",d1.save());
+	// save(4,"dp1","DiscardPile",dp1.save());
+
+	// Player notPlayer = Player();
+	// notPlayer.load(load("player1")); 
+	// cout << notPlayer.save() << endl;
+	
+	// Deck d2 = Deck();  
+	// d2.load(load("d1")); 
+	// cout << d2.save() << endl;
+
+	// Combo comb2 = Combo(); 
+	// comb2.load(load("comb1")); 
+	// cout << comb2.save() << endl;
+
+	// DiscardPile dp2 = DiscardPile();  
+	// dp2.load(load("dp1"));
+	// cout << dp2.save() << endl;
 
 
 	xmlrpc_c::registry myRegistry;
@@ -519,7 +550,7 @@ void resetSelectedSlots(){
 	selectedSlots[1] = NULL;
 }
 
-void save(int ID, string name, string classType, string data){
+void save(string name, string classType, string data){
 	sqlite3 *db;
 	char *dErrMsg = 0;
 	int rc;
@@ -534,8 +565,7 @@ void save(int ID, string name, string classType, string data){
 	}
 
 	sql = "CREATE TABLE GAME("  \
-	     "ID INT PRIMARY KEY NOT NULL," \
-	     "OBJECT_NAME TEXT NOT NULL," \
+	     "OBJECT_NAME TEXT PRIMARY KEY NOT NULL," \
 	 "OBJECT_TYPE TEXT NOT NULL," \
 	 "OBJECT_VALUE TEXT NOT NULL);";
 
@@ -548,28 +578,30 @@ void save(int ID, string name, string classType, string data){
 	}
 
 	// Insert serialized version of player1 object to database
-	ostringstream sql_string;
-	sql_string << "INSERT INTO GAME VALUES (" << ID << ", '" << name << "', '" << classType << "', '"<< data << "');";
-	sql = (sql_string.str()).c_str();
-	fprintf(stdout, "%s\n", sql);
+	string str = ("INSERT OR REPLACE INTO GAME VALUES ('" + name + "', '" + classType + "', '" + data + "');");
+	sql = str.c_str();
 	rc = sqlite3_exec(db, sql, callback, 0, &dErrMsg);
 	if( rc != SQLITE_OK ){
 	  fprintf(stderr, "SQL error: %s\n", dErrMsg);
 	  sqlite3_free(dErrMsg);
 	}else{
-	  fprintf(stdout, "Records created successfully\n");
+	 cout << name << " Records created successfully\n" << endl;
 	}
 
 
 	sqlite3_close(db);
-	//TODO save all the things
-	// datebase variable
-	// player1.save();
-	// player2.save();
-	// deck.save();
-	// discardPile.save();
-	// for(int i=0;i<6;i++)
-	// 	combos[i].save();
+}
+
+void saveAll(){
+	save("player1", "Player", player1.save());
+	save("player2", "Player", player2.save());
+	save("deck", "Deck", deck.save());
+	save("discardPile", "DiscardPile", discardPile.save());
+	for(int i=0;i<6;i++){
+		stringstream comboName;
+		comboName << "combo" << i;
+	 	save(comboName.str(), "Combo", combos[i].save());
+	}
 }
 
 string load(string name){
@@ -577,7 +609,7 @@ string load(string name){
 	char *dErrMsg = 0;
 	int rc;
 	const char* sql;
-	char data[256]; 
+	char data[2056]; 
 
 	rc = sqlite3_open("datebase.db", &db);
 	if( rc ){
@@ -588,45 +620,51 @@ string load(string name){
 	}
 
 	  // Read serialied version of player1 object from database
-	ostringstream sql_string;
-	sql_string << "SELECT OBJECT_VALUE from GAME WHERE OBJECT_NAME='" << name << "';";
-	sql = (sql_string.str()).c_str();
+	string str = "SELECT OBJECT_VALUE from GAME WHERE OBJECT_NAME='" + name + "';";
+	sql = str.c_str();
 	rc = sqlite3_exec(db, sql, callback, (void*)data, &dErrMsg);
 	if( rc != SQLITE_OK ){
 	  fprintf(stderr, "SQL error: %s\n", dErrMsg);
 	  sqlite3_free(dErrMsg);
 	}else{
-	  fprintf(stdout, "Operation done successfully\n");
+	  cout << name << " Operation done successfully\n" << endl;
 	}
 
 	sqlite3_close(db);
 
 	return data;
-	//TODO load all the things
-	//save all the things
-	// datebase variable
-	// player1.load();
-	// player2.load();
-	// deck.load();
-	// discardPile.load();
-	// for(int i=0;i<6;i++)
-	// 	combos[i].load();
+}
+
+void loadAll(){
+	player1.load(load("player1"));
+	player2.load(load("player2"));
+	deck.load(load("deck"));
+	discardPile.load(load("discardPile"));
+
+	for(int i=0;i<6;i++){
+		stringstream comboName;
+		comboName << "combo" << i;
+		combos[i].load(load(comboName.str()));
+	}
 }
 
 //set us up the gamez
 void initialize(){
-	//TODO initialize all the things
-	// player1.initialize();
-	// player2.initialize();
-	// discardPile.initialize();
-	// for(int i=0;i<6;i++)
-	// 	combos[i].initialize();
+	player1.initialize();
+	player2.initialize();
+	for(int i=0;i<6;i++)
+	 	combos[i].initialize();
 
 	deck.initialize();
 	deck.shuffle();
 	discardPile.initialize();
-	//TODO decide first player
-	curPlayer = &player1;
+	//decide first player
+	srand (time(NULL));
+	if(rand()%1 == 0)
+		curPlayer = &player1;
+	else
+		curPlayer = &player2;
+
 	//Deal player cards
 	for(int i=0;i<10;i++){
 		player1.addCard(deck.drawCard());

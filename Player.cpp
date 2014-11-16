@@ -5,19 +5,19 @@ using namespace std;
 
 Player::Player(string name, int score, int turnPhase, bool activity)
 {
-    name = name;
-    score = score;
-    turnPhase = turnPhase;
-    activity = activity;
-    ai = false;
+    this->name = name;
+    this->score = score;
+    this->turnPhase = turnPhase;
+    this->active = activity;
+    this->ai = false;
 }
 Player::Player(string name, int score, int turnPhase, bool activity, bool ai)
 {
-    name = name;
-    score = score;
-    turnPhase = turnPhase;
-    active = activity;
-    ai = ai;
+    this->name = name;
+    this->score = score;
+    this->turnPhase = turnPhase;
+    this->active = activity;
+    this->ai = ai;
 }
 
 void Player::initialize(){
@@ -36,7 +36,6 @@ int Player::calculateScore(){
     for (list<Card>::iterator it = Hand.begin(); it != Hand.end(); ++it){
         score += (*it).points();
     }
-    //cout << "score is " << score << endl;
     return score;
 }
 
@@ -45,10 +44,8 @@ bool Player::canKnock(){
     bool knock = false;
     int deadwood = calculateScore();
     if (deadwood < 10){
-        //cout << "player can knock, deadwood is " << deadwood << endl;
         knock = true;
     }
-    //cout << "player can't knock, deadwood is " << deadwood << endl;
     return knock;
 }
 
@@ -61,11 +58,9 @@ void Player::addCard(Card card){
 Card Player::removeCard(int index){
     Card card(0,0,0);
     if (Hand.empty()){
-        //cout << "can't remove, hand is empty" << endl;
         return card;
     }
     if (index <0 || index > Hand.size()-1){
-        //cout << "can't remove, card at given index does not exist " << endl;
         return card;
     }
     list<Card>::iterator it = Hand.begin();
@@ -79,7 +74,6 @@ Card Player::removeCard(int index){
  Card Player::getCard(int index){
     if (index <0 || index > Hand.size()-1){
         Card card(0,0,0);
-        //cout << "can't return, card at given index does not exist " << endl;
         return card;
     }
     list<Card>::iterator it = Hand.begin();
@@ -89,14 +83,12 @@ Card Player::removeCard(int index){
 
 ///returns size of player's current hand
 int Player::handSize(){
-    //cout << "hand size is " << Hand.size() << endl;
     return Hand.size();
 }
 
  ///swaps the cards located in two indices in player's hand
 void Player::swapCard(int index1, int index2){
     if((index1 >= Hand.size() || index2 >= Hand.size()) || (index1<0 ||index2<0)){
-        //cout << "one of the indices is either too large or negative" << endl;
         return;
     }
     list<Card>::iterator card1 = Hand.begin();
@@ -110,7 +102,7 @@ void Player::swapCard(int index1, int index2){
 
 string Player::save(){
     ostringstream s;
-    s << "name=" << name << ";score=" << score << ";turnPhase=" << turnPhase << ";activity=" << active << ";ai=" << ai << ";";
+    s << "name=" << name << ";score=" << score << ";turnPhase=" << turnPhase << ";active=" << active << ";ai=" << ai << ";";
     //TODO add in cards from Hand
     for (list<Card>::iterator it = Hand.begin(); it != Hand.end(); ++it){
         s <<"card="<<(*it).save()<<";";
@@ -119,7 +111,7 @@ string Player::save(){
 }
 
 void Player::load(string serial){
-    //this.initialize();
+    initialize();
 
     string delimeter = ";";
     string delimeter2 = "=";
@@ -130,17 +122,16 @@ void Player::load(string serial){
         index2 = full.find(delimeter2);
         name = full.substr(0, index2);
         var = full.substr(index2+1,full.size());
-
         if (name == "name") {
-            name = var.c_str();
+            this->name = var;
         } else if (name == "score") {
-            score = atoi(var.c_str());
+            this->score = atoi(var.c_str());
         } else if (name == "turnPhase") {
-            turnPhase = atoi(var.c_str());
-        } else if (name == "activity") {
-            active = var.c_str()=="true"; //boolean?
+            this->turnPhase = atoi(var.c_str());
+        } else if (name == "active") {
+            this->active = var.c_str()=="true"; //boolean?
         } else if (name == "ai") {
-            ai = var.c_str()=="true";   //boolean?
+            this->ai = var.c_str()=="true";   //boolean?
         } else if (name == "card") {
             //make a card
             Card c = Card();

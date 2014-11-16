@@ -10,7 +10,11 @@ public:
   void addCard(Card c); 
   bool isEmpty();
   Card removeCard(); 
-  Card topCard();
+  Card topCard(); 
+  //convert to string for saving in datebase
+  string save();
+  //load player from database
+  void load(string serial);
   std::vector<Card> discardDeck;
 };
 

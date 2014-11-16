@@ -78,13 +78,13 @@ void Card::load(string serial){
         var = full.substr(index2+1,full.size());
 
 	    if (name == "suit") {
-	    	suitVal = atoi(var.c_str());
+	    	this->suitVal = atoi(var.c_str());
 	    } else if (name == "value") {
-	    	valueVal = atoi(var.c_str());
+	    	this->valueVal = atoi(var.c_str());
 	    } else if (name == "points") {
-	    	pointsVal = atoi(var.c_str());
-	    } else if (name == "onwer") {
-	    	owner= var.c_str();
+	    	this->pointsVal = atoi(var.c_str());
+	    } else if (name == "owner") {
+	    	this->owner= var;
 	    } else {
 	    	cout << "error" << endl;
 	    }

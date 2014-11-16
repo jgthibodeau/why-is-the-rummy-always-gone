@@ -1,5 +1,6 @@
 #include "DiscardPile.h" 
-#include "Card.h" 
+#include "Card.h"  
+#include <vector>
 
 DiscardPile::DiscardPile(){ 
 	initialize();
@@ -29,4 +30,37 @@ Card DiscardPile::removeCard(){
 Card DiscardPile::topCard(){ 
 	Card top = discardDeck.back(); 
 	return top;
+}
+
+string DiscardPile::save(){
+    ostringstream s;
+    for (vector<Card>::iterator it = discardDeck.begin(); it != discardDeck.end(); ++it){
+        s <<"card="<<(*it).save()<<";";
+    }
+    return s.str();
+}
+
+void DiscardPile::load(string serial){
+    initialize();
+
+    string delimeter = ";";
+    string delimeter2 = "=";
+    string full, name, var;
+    int index1 = 0, index2 = 0;
+    while ((index1 = serial.find(delimeter)) != -1) {
+        full = serial.substr(0, index1);
+        index2 = full.find(delimeter2);
+        name = full.substr(0, index2);
+        var = full.substr(index2+1,full.size());
+		if (name == "card") {
+            //make a card
+            Card c = Card();
+            //load this card and push it into the hand
+            c.load(var);
+            discardDeck.push_back(c);
+        } else {
+            cout << "error" << endl;
+        }
+        serial.erase(0, index1 + delimeter.length());
+    }
 }

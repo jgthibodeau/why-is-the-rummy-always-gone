@@ -9,6 +9,10 @@ private:
 public:
   Combo();
   void initialize();   
+  //convert to string for saving in datebase
+  string save();
+  //load player from database
+  void load(string serial);
   Card removeCard();  
   Card showCard(); 
   bool isValid();

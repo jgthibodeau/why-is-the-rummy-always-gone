@@ -9,7 +9,11 @@ public:
   void initialize();
   void shuffle(); 
   bool isEmpty();
-  Card drawCard();
+  Card drawCard(); 
+  //convert to string for saving in datebase
+  string save();
+  //load player from database
+  void load(string serial);
   std::vector<Card> cardDeck;
 };
 
