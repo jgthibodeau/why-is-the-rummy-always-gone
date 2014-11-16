@@ -93,6 +93,8 @@ void saveAll();
 string load(string name);
 void loadAll();
 void initialize();
+void emptyDatabase();
+void endGame();
 
 //returns the current game status (game going, waiting for p2, no game)
 class gameStatus : public xmlrpc_c::method{
@@ -126,17 +128,23 @@ public:
 	addPlayer(){}
 	void execute(xmlrpc_c::paramList const& paramList, xmlrpc_c::value* const retvalP){
 		//take in players name
+		string playerName = paramList.getString(0);
+		paramList.verifyEnd(1);
 
 		switch(SERVER_STATUS){
 			case(EMPTY):
 				//set player1 to this player
+				player1.setName(playerName);
 				SERVER_STATUS = WAITING;
 			break;
 			case(WAITING):
 				//set player2 to this player and initialize game
+				player2.setName(playerName);
 				SERVER_STATUS = FULL;
+				initialize();
 			break;
 		}
+		*retvalP = xmlrpc_c::value_boolean(true);
 	}
 };
 
@@ -145,8 +153,11 @@ public:
 	checkPlayer(){}
 	void execute(xmlrpc_c::paramList const& paramList, xmlrpc_c::value* const retvalP){
 		//take in players name
+		string playerName = paramList.getString(0);
+		paramList.verifyEnd(1);
 
 		//return if player is player1 or player2
+		*retvalP = xmlrpc_c::value_boolean(SERVER_STATUS != EMPTY && (playerName == player1.getName() || playerName == player2.getName()));
 	}
 };
 
@@ -173,14 +184,15 @@ public:
 
 		//if quitKey pressed
 		if(key == quitKey.key())
-			std::exit(0);
+			endGame();
 
 		//TODO convert to checkEndDeck() method
-		if(deck.isEmpty()){
+		else if(deck.isEmpty()){
 			bottomBanner = "The deck has run out of cards, oh noes!";
+			endGame();
 		}
 		//if this player's turn
-		if(playerName == (*curPlayer).getName()){
+		else if(playerName == (*curPlayer).getName()){
 			//temporarily hold on to current player and current turn phase
 			Player* tempPlayer = curPlayer;
 			int tempPhase = (*curPlayer).getTurnPhase();
@@ -328,6 +340,7 @@ public:
 										//curPlayer = &player2;
 										//TODO player1.setActivity(false);
 										bottomBanner = "A winner is you!";
+										emptyDatabase();
 									}
 									else{
 										(*curPlayer).addCard(c);
@@ -476,6 +489,11 @@ public:
 	}
 };
 
+void endGame(){
+	emptyDatabase();
+	SERVER_STATUS = EMPTY;
+}
+
 // Function called by sql query
 // Stores data in *data pointer
 static int callback(void *data, int argc, char **argv, char **azColName) {
@@ -522,6 +540,18 @@ int main(int const argc, const char** const argv){
 	// dp2.load(load("dp1"));
 	// cout << dp2.save() << endl;
 
+	//initialize cardslots
+	cardSlots[0] = CardSlot(0,0,0,0,CardSlot::deck);		//1 deck
+	cardSlots[1] = CardSlot(0,0,0,0,CardSlot::discard);		//1 discard pile
+	for(int i=0;i<11;i++){									//11 player cards
+		cardSlots[2+i] = CardSlot(0,0,0,0, CardSlot::player, i);
+	}
+	for(int i=0;i<6;i++){									//6 combo cards
+		cardSlots[13+i] = CardSlot(0,0,0,0, CardSlot::combo, i);
+	}
+
+	SERVER_STATUS = EMPTY;
+
 	//try to load everything if it exists
 	loadAll();
 
@@ -558,6 +588,35 @@ void resetSelectedSlots(){
 		(*selectedSlots[1]).setHighlight(false);
 	selectedSlots[0] = NULL;
 	selectedSlots[1] = NULL;
+}
+
+void emptyDatabase(){
+	sqlite3 *db;
+	char *dErrMsg = 0;
+	int rc;
+	const char* sql;
+	char data[2056]; 
+
+	rc = sqlite3_open("datebase.db", &db);
+	if( rc ){
+	  fprintf(stderr, "Can't open database: %s\n", sqlite3_errmsg(db));
+	  exit(0);
+	}else{
+	  fprintf(stderr, "Opened database successfully\n");
+	}
+
+	string sql_string = "DROP TABLE table_name 'GAME'";
+	sql = sql_string.c_str();
+
+	rc = sqlite3_exec(db, sql, callback, (void*)data, &dErrMsg);
+	if( rc != SQLITE_OK ){
+	  fprintf(stderr, "SQL error: %s\n", dErrMsg);
+	  sqlite3_free(dErrMsg);
+	}else{
+	  cout << "Dropped successfully\n" << endl;
+	}
+
+	sqlite3_close(db);
 }
 
 void save(string name, string classType, string data){
@@ -612,6 +671,10 @@ void saveAll(){
 		comboName << "combo" << i;
 	 	save(comboName.str(), "Combo", combos[i].save());
 	}
+	stringstream state;
+	state << SERVER_STATUS;
+	save("SERVER_STATUS", "SERVER", state.str());
+	save("curPlayer", "SERVER", (*curPlayer).getName());
 }
 
 string load(string name){
@@ -668,17 +731,13 @@ void loadAll(){
 	if( rc != SQLITE_OK ){
 	  fprintf(stderr, "SQL error: %s\n", dErrMsg);
 	  sqlite3_free(dErrMsg);
-	}else{
-	  cout << "LoadAll done successfully\n" << endl;
 	}
 
 	sqlite3_close(db);
 
 	cout << data << endl;
-	exit(0);
-
 	//if table exists, load errythang
-	if(data != 0){
+	if(atoi(data) > 0){
 		player1.load(load("player1"));
 		player2.load(load("player2"));
 		deck.load(load("deck"));
@@ -689,7 +748,16 @@ void loadAll(){
 			comboName << "combo" << i;
 			combos[i].load(load(comboName.str()));
 		}
+		SERVER_STATUS = atoi(load("SERVER_STATUS").c_str());
+		string p = load("curPlayer");
+		if(p == player1.getName())
+			curPlayer = &player1;
+		else
+			curPlayer = &player2;
+		cout << "LoadAll done successfully\n" << endl;
 	}
+	else
+		cout << "LoadAll skipped successfully\n" << endl;
 }
 
 //set us up the gamez
@@ -720,13 +788,5 @@ void initialize(){
 	}
 	discardPile.addCard(deck.drawCard());
 
-	//initialize cardslots
-	cardSlots[0] = CardSlot(0,0,0,0,CardSlot::deck);		//1 deck
-	cardSlots[1] = CardSlot(0,0,0,0,CardSlot::discard);		//1 discard pile
-	for(int i=0;i<11;i++){									//11 player cards
-		cardSlots[2+i] = CardSlot(0,0,0,0, CardSlot::player, i);
-	}
-	for(int i=0;i<6;i++){									//6 combo cards
-		cardSlots[13+i] = CardSlot(0,0,0,0, CardSlot::combo, i);
-	}
+	saveAll();
 }

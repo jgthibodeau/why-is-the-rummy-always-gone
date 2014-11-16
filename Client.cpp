@@ -30,6 +30,7 @@
 #include <cstdlib>
 #include <sstream>
 #include <algorithm>
+#include <unistd.h>
 
 //locally hosted server url
 #define SERVERURL "http://localhost:8080/RPC2"
@@ -203,30 +204,49 @@ void gameLoop(){
 	}
 	case LOBBY:
 	{
-		//TODO
 		//if player is already in a game, go directly to that game
+		xmlrpc_c::value playerInGame;
+		client.call(SERVERURL, "server.checkPlayer", "s", &playerInGame, playerName.c_str());
+		if(xmlrpc_c::value_boolean(playerInGame)){
 
-		//otherwise, let the player start/join a game
-		xmlrpc_c::value status;
-		client.call(SERVERURL, "server.gameStatus", "s", &status, playerName.c_str());
-		switch(xmlrpc_c::value_int(status)){
-			//server is doing a game right now
-			case FULL:
-			{
-				topBanner = serverFullMessage;
-				break;
-			}
-			//server is doing a 2player game and is waiting for player2
-			case WAITING:
-			{
-				topBanner = serverWaitingMessage;
-				break;
-			}
-			//server is doing nothing
-			case EMPTY:
-			{
-				topBanner = serverEmptyMessage;
-				break;
+			xmlrpc_c::value initialCards;
+			client.call(SERVERURL, "server.respondToInput", "iis", &initialCards,' ',-1, playerName.c_str());
+			decipherCards(initialCards);
+			GAME_STATE = IN_GAME;
+		}
+		else{
+			//otherwise, let the player start/join a game
+			xmlrpc_c::value status;
+			client.call(SERVERURL, "server.gameStatus", "s", &status, playerName.c_str());
+			switch(xmlrpc_c::value_int(status)){
+				//server is doing a game right now
+				case FULL:
+				{
+					topBanner = serverFullMessage;
+					break;
+				}
+				//server is doing a 2player game and is waiting for player2
+				case WAITING:
+				{
+					topBanner = serverWaitingMessage;
+					break;
+				}
+				//server is doing nothing
+				case EMPTY:
+				{
+					xmlrpc_c::value result;
+					client.call(SERVERURL, "server.addPlayer", "s", &result, playerName.c_str());
+					xmlrpc_c::value result2;
+					client.call(SERVERURL, "server.addPlayer", "s", &result2, "");
+
+					xmlrpc_c::value initialCards;
+					client.call(SERVERURL, "server.respondToInput", "iis", &initialCards,' ',-1, playerName.c_str());
+					decipherCards(initialCards);
+					GAME_STATE = IN_GAME;
+
+					//topBanner = serverEmptyMessage;
+					break;
+				}
 			}
 		}
 
@@ -240,14 +260,6 @@ void gameLoop(){
 		//if loadKey pushed
 			//load from the server with players name
 
-		if(false){
-			xmlrpc_c::value result;
-			client.call(SERVERURL, "server.initialize", "s", &result, playerName.c_str());
-			xmlrpc_c::value initialCards;
-			client.call(SERVERURL, "server.respondToInput", "iis", &initialCards,' ',-1, playerName.c_str());
-			decipherCards(initialCards);
-			GAME_STATE = IN_GAME;
-		}
 		break;
 	}
 	case PRE_GAME:
@@ -257,6 +269,13 @@ void gameLoop(){
 	}
 	case IN_GAME:
 	{
+		//if game ended
+		xmlrpc_c::value status;
+		client.call(SERVERURL, "server.gameStatus", "s", &status, playerName.c_str());
+		if(xmlrpc_c::value_int(status) == EMPTY){
+			topBanner = "Returning to lobby in 5 seconds";
+			GAME_STATE = LOBBY;
+		}
 		//it not our turn, poll for info
 		if(turnPhase == -1){
 			xmlrpc_c::value cards;
