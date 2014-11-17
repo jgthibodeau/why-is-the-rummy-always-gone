@@ -24,6 +24,7 @@
 #include "Key.h"
 #include "Point.h"
 #include "CardSlot.h"
+#include "Player.h"
 #include <signal.h>
 #include <ncurses.h>
 #include <math.h>
@@ -84,6 +85,12 @@ string serverFullMessage = "Game server is busy, please wait or try again later.
 string serverWaitingMessage = "Waiting for Player 2 "+joinKey.toString()+" "+closeKey.toString();
 //TODO reenable multikey
 string serverEmptyMessage = singleKey.toString()+/*" "+multiKey.toString()+*/" "+closeKey.toString();
+
+string drawMessage = "Gin Rummy - Click Deck or Discard Pile to Draw - "+quitKey.toString()+" "+closeKey.toString();
+string playMessage = "Gin Rummy - Click a Card then Discard Pile to Discard - "+knockKey.toString()+" - "+quitKey.toString()+" "+closeKey.toString();
+string knockMessage = "Gin Rummy - Click a Card then a Combo Slot to Play it - Click a Card then Discard Pile to Knock - "+cancelKey.toString()+" "+quitKey.toString()+" "+closeKey.toString();
+string notTurnMessage = "Gin Rummy - Opponent's Turn - "+quitKey.toString()+" "+closeKey.toString();
+
 string topBanner,bottomBanner;
 
 // Signal Subroutine for Window Resize
@@ -289,17 +296,35 @@ void gameLoop(){
 			xmlrpc_c::value cards;
 			client.call(SERVERURL, "server.respondToInput", "iis", &cards,' ',-1, playerName.c_str());
 			decipherCards(cards);
+			topBanner = notTurnMessage;
 		}
-		//if mouseClick, 1 and 4 are clicked and released (removes issues from holding then releasing) or keyboard key
-		else if(key != 0 || (key == -1 && (gameDisplay.getMouseEventButton() == 1 || gameDisplay.getMouseEventButton() == 4))){
-			//get card clicked if any
-			int slotNum = -1;
-			if(key == -1)
-				slotNum = findCardSlot(gameDisplay.getMouseEventX(), gameDisplay.getMouseEventY());
-			//TODO
-			xmlrpc_c::value cards;
-			client.call(SERVERURL, "server.respondToInput", "iis", &cards,key,slotNum, playerName.c_str());
-			decipherCards(cards);
+		else{
+			//determine topBanner message
+			switch(turnPhase){
+				case(Player::draw):
+					topBanner = drawMessage;
+				break;
+				case(Player::play):
+					topBanner = playMessage;
+				break;
+				case(Player::knock):
+					topBanner = knockMessage;
+				break;
+				case(Player::not_knocker):
+					topBanner = knockMessage;
+				break;
+			}
+			//if mouseClick, 1 and 4 are clicked and released (removes issues from holding then releasing) or keyboard key
+			if(key != 0 || (key == -1 && (gameDisplay.getMouseEventButton() == 1 || gameDisplay.getMouseEventButton() == 4))){
+				//get card clicked if any
+				int slotNum = -1;
+				if(key == -1)
+					slotNum = findCardSlot(gameDisplay.getMouseEventX(), gameDisplay.getMouseEventY());
+				//TODO
+				xmlrpc_c::value cards;
+				client.call(SERVERURL, "server.respondToInput", "iis", &cards,key,slotNum, playerName.c_str());
+				decipherCards(cards);
+			}
 		}
 		break;
 	}
@@ -310,8 +335,8 @@ void decipherCards(xmlrpc_c::value cards){
 
 	vector<xmlrpc_c::value> v = xmlrpc_c::value_array(cards).vectorValueValue();
 	std::vector<xmlrpc_c::value>::iterator it = v.begin();
-	topBanner = xmlrpc_c::value_string(*it);
-	it++;
+	//topBanner = xmlrpc_c::value_string(*it);
+	//it++;
 	bottomBanner = xmlrpc_c::value_string(*it);
 	it++;
 	turnPhase = xmlrpc_c::value_int(*it);

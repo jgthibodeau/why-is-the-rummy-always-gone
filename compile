@@ -25,13 +25,9 @@ g++ -c -I. -I$DIR/include -I$DIR/include display.cpp
 g++ -c -I. -I$DIR/include -I$DIR/include Key.cpp
 g++ -c -I. -I$DIR/include -I$DIR/include Point.cpp
 g++ -c -I. -I$DIR/include -I$DIR/include CardSlot.cpp
-g++ -c -I. -I$DIR/include -I$DIR/include Card.cpp
-g++ -c -I. -I$DIR/include -I$DIR/include Deck.cpp
-g++ -c -I. -I$DIR/include -I$DIR/include DiscardPile.cpp
-g++ -c -I. -I$DIR/include -I$DIR/include Combo.cpp
 g++ -c -I. -I$DIR/include -I$DIR/include Player.cpp
 g++ -c -I. -I$DIR/include -I$DIR/include Client.cpp
-g++ -o client Client.o Key.o CardSlot.o Point.o Card.o Deck.o DiscardPile.o Combo.o Player.o display.o $DIR/lib/libxmlrpc_client++.a $DIR/lib/libxmlrpc_client.a $DIR/lib/libxmlrpc++.a $DIR/lib/libxmlrpc.a $DIR/lib/libxmlrpc_util.a $DIR/lib/libxmlrpc_xmlparse.a $DIR/lib/libxmlrpc_xmltok.a  -L/usr/lib/i386-linux-gnu -lcurl $DIR/lib/libxmlrpc_packetsocket.a -lncursesw -o client
+g++ -o client Client.o Key.o CardSlot.o Point.o Card.o Player.o display.o $DIR/lib/libxmlrpc_client++.a $DIR/lib/libxmlrpc_client.a $DIR/lib/libxmlrpc++.a $DIR/lib/libxmlrpc.a $DIR/lib/libxmlrpc_util.a $DIR/lib/libxmlrpc_xmlparse.a $DIR/lib/libxmlrpc_xmltok.a  -L/usr/lib/i386-linux-gnu -lcurl $DIR/lib/libxmlrpc_packetsocket.a -lncursesw -o client
 
 
 # DIR=`pwd`

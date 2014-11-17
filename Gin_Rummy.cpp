@@ -172,6 +172,7 @@ public:
 	void execute(xmlrpc_c::paramList const& paramList, xmlrpc_c::value* const retvalP){
 		//quit/clear stuff
 		SERVER_STATUS = EMPTY;
+		saveAll();
 		//emptyDatabase();
 		*retvalP = xmlrpc_c::value_boolean(true);
 	}
@@ -426,7 +427,6 @@ public:
 		}
 
 		else{
-			sleep(1);
 			//execute ai code
 			player2.addCard(deck.drawCard());
 			Card c = player2.removeCard(0);
@@ -438,7 +438,7 @@ public:
 
 		//convert cards/player info/banner into a big ol' array to return
 		vector<xmlrpc_c::value> returnData;
-		returnData.push_back(xmlrpc_c::value_string(topBanner));
+		//returnData.push_back(xmlrpc_c::value_string(topBanner));
 		returnData.push_back(xmlrpc_c::value_string(bottomBanner));
 		if((*curPlayer).getName() == playerName)
 			returnData.push_back(xmlrpc_c::value_int((*curPlayer).getTurnPhase()));
@@ -769,6 +769,9 @@ void loadAll(){
 
 //set us up the gamez
 void initialize(){
+	topBanner = "";
+	bottomBanner = "";
+
 	player1.initialize();
 	player2.initialize();
 	for(int i=0;i<6;i++)
