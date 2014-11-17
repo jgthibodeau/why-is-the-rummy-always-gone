@@ -348,7 +348,7 @@ public:
 										//curPlayer = &player2;
 										//TODO player1.setActivity(false);
 										bottomBanner = "A winner is you!";
-										emptyDatabase();
+										endGame();
 									}
 									else{
 										(*curPlayer).addCard(c);
