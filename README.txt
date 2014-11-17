@@ -7,18 +7,21 @@ Zachary Windoloski - Card classes (Card, Deck, Discard Pile, Combo)
 
 *********************
 How to Start/Compile:
-	Run './Compile_Play' to compile the 'Play' executable and run it.
-	To rerun, you only need to run './Play'
+	Run './compile' to compile the server and client executables
+	Run './server' to start the server
+	Run './client' to start the client
 
 ************
 How to Play:
 	For full game rules, please visit http://en.wikipedia.org/wiki/Gin_rummy
 
 	Contextual game controls are shown in the top banner as the game progresses.
-	At any point, press 'q' to quit
+	At any point, press 'q' to quit the client and have the server end the game.
+	Press 'x' to quit the client, but allow the server to keep the game running.
 
 	Press 'n' for a new game and enter your username, this will show up in the bottom banner as you type
-	Press enter to submit your name and begin a game
+	Press enter to submit your name, this will put you into the lobby
+	From the lobby, if the server is not currently running a game, press 1 to start a 1 Player game.  Otherwise, you must wait for the server to finish the current game, or quit the client.
 
 	While in a game:
 		The top banner will alert you when it is your turn, and what contextual controls are available
@@ -40,12 +43,19 @@ How to Play:
 			To play a single combo:
 				Click on one of your cards for the combo, and then on the combo slot you want to place it in
 				If this card cannot be placed in this combo, you will keep the card and a message will appear on the bottom banner
-				Repeat this for each card you want to add
+				Add the next card for this combo to the same slot, and repeat until the combo is complete
 			When you have played all of your combos:
 				Drag one card to the discard pile
 				If all of your combos are valid, and your remaining cards sum to less than 10 you have won
 				Otherwise, you will be told about any combos that are invalid or if you have too much remaining 'deadwood'
 			If you would like to cancel knocking, press the 'c' key
+
+*******************
+Saving and Loading:
+	The server will continuously save the current status of a game, allowing the game to resume if either the client or server experiences a crash.
+	When in a game:
+		If you 'Save and Exit' the client will close, but the server will keep the current game running.
+		If you 'Quit' the client will close, and the server will end the current game allowing a new one to be started.
 
 ************
 How to Test:
