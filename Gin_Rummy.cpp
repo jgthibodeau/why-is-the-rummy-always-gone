@@ -76,15 +76,9 @@ const int NUMBERCARDSLOTS = 19;
 CardSlot cardSlots[NUMBERCARDSLOTS];	//1 deck, 1 discard pile, 6 combo piles, 10 player cards
 CardSlot *selectedSlots[2];				//used for selecting specific cards
 //banner messages to display controls and info
-string startMessage = "Gin Rummy - "+startKey.toString()+" "+quitKey.toString();
-string drawMessage = "Gin Rummy - Click Deck or Discard Pile to Draw - "+quitKey.toString()+" "+closeKey.toString();
-string playMessage = "Gin Rummy - Click a Card then Discard Pile to Discard - "+knockKey.toString()+" - "+quitKey.toString()+" "+closeKey.toString();
-string knockMessage = "Gin Rummy - Click a Card then a Combo Slot to Play it - Click a Card then Discard Pile to Knock - "+cancelKey.toString()+" "+quitKey.toString()+" "+closeKey.toString();
-string notTurnMessage = "Gin Rummy - Opponent's Turn - "+quitKey.toString()+" "+closeKey.toString();
-string nameMessage = "Enter your name: ";
 string dontComboMessage = "Those cards don't combo!";
 string badDeadwoodMessage = "You have too much remaining deadwood!";
-string topBanner,bottomBanner;
+string bottomBanner;
 
 
 //reset highlights and selected cards
@@ -136,15 +130,13 @@ public:
 			case(EMPTY):
 				//set player1 to this player
 				player1.setName(playerName);
-				if(playerName == "")
-					player1.setAI(true);
+				player1.setAI(playerName == "");
 				SERVER_STATUS = WAITING;
 			break;
 			case(WAITING):
 				//set player2 to this player and initialize game
 				player2.setName(playerName);
-				if(playerName == "")
-					player2.setAI(true);
+				player2.setAI(playerName == "");
 				SERVER_STATUS = FULL;
 				initialize();
 			break;
@@ -232,14 +224,12 @@ public:
 			switch((*curPlayer).getTurnPhase()){
 				//if in draw phase
 				case(Player::draw):
-					topBanner = drawMessage;
 
 					//if player click deck
 					if((selectedSlots[0] != NULL && (*selectedSlots[0]).type() == CardSlot::deck) ||
 							(selectedSlots[1] != NULL && (*selectedSlots[1]).type() == CardSlot::deck)){
 						//give player a deck card and go to play phase
 						(*curPlayer).addCard(deck.drawCard());
-						topBanner = playMessage;
 						(*curPlayer).setTurnPhase(Player::play);
 						resetSelectedSlots();
 					}
@@ -251,7 +241,6 @@ public:
 							//give player a discard card and go to play phase
 							(*curPlayer).addCard(discardPile.removeCard());
 							(*curPlayer).setTurnPhase(Player::play);
-							topBanner = playMessage;
 							resetSelectedSlots();
 						}
 						else
@@ -264,7 +253,6 @@ public:
 					//if knockKey pressed
 					if(key == knockKey.key()){
 						(*curPlayer).setTurnPhase(Player::knock);
-						topBanner = knockMessage;
 					}
 
 					else if(selectedSlots[0] != NULL){
@@ -283,7 +271,6 @@ public:
 									else
 										curPlayer = &player1;
 									(*curPlayer).setTurnPhase(Player::draw);
-									topBanner = notTurnMessage;
 								}
 								resetSelectedSlots();
 							}
@@ -378,7 +365,6 @@ public:
 							}
 						}
 						//go to play phase
-						topBanner = playMessage;
 						(*curPlayer).setTurnPhase(Player::play);
 					}
 				break;
@@ -425,20 +411,27 @@ public:
 			if(tempPlayer != curPlayer || tempPhase != (*curPlayer).getTurnPhase())
 				saveAll();
 		}
-
-		else{
+		//do ai code if there is an aiplayer
+		else if((*curPlayer).isAI()){
+			cout << "doing ai" << endl;
 			//execute ai code
-			player2.addCard(deck.drawCard());
-			Card c = player2.removeCard(0);
+			(*curPlayer).addCard(deck.drawCard());
+			Card c = (*curPlayer).removeCard(0);
 			discardPile.addCard(c);
-			curPlayer = &player1;
-			player1.setTurnPhase(Player::draw);
-			topBanner = drawMessage;
+			//TODO (*curPlayer).doTurn(deck, discardPile, combos);
+
+			if(curPlayer == &player2)
+				curPlayer = &player1;
+			else
+				curPlayer = &player2;
+			(*curPlayer).setTurnPhase(Player::draw);
+			saveAll();
 		}
+		
+		cout << "current users turn " << (*curPlayer).getName() << endl;
 
 		//convert cards/player info/banner into a big ol' array to return
 		vector<xmlrpc_c::value> returnData;
-		//returnData.push_back(xmlrpc_c::value_string(topBanner));
 		returnData.push_back(xmlrpc_c::value_string(bottomBanner));
 		if((*curPlayer).getName() == playerName)
 			returnData.push_back(xmlrpc_c::value_int((*curPlayer).getTurnPhase()));
@@ -769,7 +762,6 @@ void loadAll(){
 
 //set us up the gamez
 void initialize(){
-	topBanner = "";
 	bottomBanner = "";
 
 	player1.initialize();

@@ -24,7 +24,6 @@ void Player::initialize(){
 	score = 0;
 	turnPhase = 0;
 	active = false;
-	ai = false;
 	Hand.clear();
 }
 
