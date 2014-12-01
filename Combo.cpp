@@ -1,5 +1,6 @@
 #include "Combo.h" 
-#include "Card.h" 
+#include "Card.h"  
+#include "Player.h"
 using namespace std;
 
 Combo::Combo(){  
@@ -17,6 +18,18 @@ bool Combo::isEmpty(){
 
 bool Combo::isValid(){ 
 	return (comboSet.size() >= 3 || comboSet.size() == 0);
+} 
+
+void Combo::returnCardsToPlayer(Player p){ 
+	for(deque<Card>::iterator it = comboSet.begin(); it != comboSet.end(); ++it){
+     if ((*it).whoOwns().compare(p.getName()) == 0){ //if card is owned by the person requesting cards back
+     	Card returnedCard; 
+     	returnedCard = (*it); //get card from deque
+     	comboSet.erase(it); //erase card from deque
+     	p.addCard(returnedCard); //place removed card in players hand
+	   } 
+
+  }
 }
 
 Card Combo::showCard(){ 
