@@ -60,6 +60,7 @@ static const int EMPTY = 2;
 string playerName="";
 string answer="";
 int turnPhase = -1;
+int sleepAmount;
 
 //display vars
 display gameDisplay;
@@ -67,8 +68,7 @@ display gameDisplay;
 Key startKey('\n', "Login");
 Key singleKey('1', "Start 1P Game");
 Key multiKey('2', "Start 2P Game");
-Key joinKey('j', "Join 2P Game");
-Key loadKey('l', "Load Game");
+Key joinKey('j', "Join Game");
 Key knockKey('k', "Knock");
 Key submitKey('s', "Submit");
 Key cancelKey('c', "Cancel");
@@ -82,9 +82,8 @@ CardSlot *selectedSlots[2];				//used for selecting specific cards
 string startMessage = "Gin Rummy - Login (Enter) "+closeKey.toString();
 string nameMessage = "Enter your name: ";
 string serverFullMessage = "Game server is busy, please wait or try again later. "+closeKey.toString();
-string joinMessage = "Waiting for Player 2 "+joinKey.toString()+" "+closeKey.toString();
-string serverWaitingMessage = "Waiting for Player 2 "+quitKey.toString()+" "+closeKey.toString();
-//TODO reenable multikey
+string joinMessage = "Waiting for Player 2 - "+joinKey.toString()+" "+closeKey.toString();
+string serverWaitingMessage = "Waiting for Player 2 - "+quitKey.toString()+" "+closeKey.toString();
 string serverEmptyMessage = singleKey.toString()+" "+multiKey.toString()+" "+closeKey.toString();
 
 string drawMessage = "Gin Rummy - Click Deck or Discard Pile to Draw - "+quitKey.toString()+" "+closeKey.toString();
@@ -125,6 +124,8 @@ int main(int argc, char* argv[])
 	for (;;) {
 		gameLoop();
 		draw();
+		sleep(sleepAmount);
+		sleepAmount=0;
 	}
 
 	return 0;
@@ -186,7 +187,7 @@ void gameLoop(){
 		bottomBanner = nameMessage+playerName;
 
 		//if enter key pressed
-		if(key == '\n'){
+		if(key == '\n' && playerName.size() > 0){
 			string low = playerName;
 			std::transform(low.begin(), low.end(), low.begin(), ::tolower);
 			if(low == "david" || low == "irwin" || low == "davidirwin" || low == "dirwin"
@@ -247,7 +248,7 @@ void gameLoop(){
 				else{
 					if(key == joinKey.key()){
 						xmlrpc_c::value result;
-						client.call(SERVERURL, "server.addPlayer", "s", &result, playerName.c_str());
+						client.call(SERVERURL, "server.addPlayer", "sb", &result, playerName.c_str(),false);
 					}
 					topBanner = joinMessage;
 				}
@@ -260,9 +261,9 @@ void gameLoop(){
 			
 				if(key == singleKey.key()){
 					xmlrpc_c::value result;
-					client.call(SERVERURL, "server.addPlayer", "s", &result, playerName.c_str());
+					client.call(SERVERURL, "server.addPlayer", "sb", &result, playerName.c_str(),false);
 					xmlrpc_c::value result2;
-					client.call(SERVERURL, "server.addPlayer", "s", &result2, "");
+					client.call(SERVERURL, "server.addPlayer", "sb", &result2, "",true);
 
 					xmlrpc_c::value initialCards;
 					client.call(SERVERURL, "server.respondToInput", "iis", &initialCards,' ',-1, playerName.c_str());
@@ -271,7 +272,9 @@ void gameLoop(){
 				}
 				else if(key == multiKey.key()){
 					xmlrpc_c::value result;
-					client.call(SERVERURL, "server.addPlayer", "s", &result, playerName.c_str());
+					client.call(SERVERURL, "server.addPlayer", "sb", &result, playerName.c_str(),false);
+					if(!xmlrpc_c::value_boolean(result))
+						bottomBanner = "An error occured while joining, please double check that your username is unique";
 				}
 
 				break;
@@ -306,6 +309,7 @@ void gameLoop(){
 			client.call(SERVERURL, "server.respondToInput", "iis", &cards,' ',-1, playerName.c_str());
 			decipherCards(cards);
 			topBanner = notTurnMessage;
+			sleepAmount = 5;
 		}
 		else{
 			//determine topBanner message

@@ -124,24 +124,35 @@ public:
 	void execute(xmlrpc_c::paramList const& paramList, xmlrpc_c::value* const retvalP){
 		//take in players name
 		string playerName = paramList.getString(0);
-		paramList.verifyEnd(1);
+		bool ai = paramList.getBoolean(1);
+		paramList.verifyEnd(2);
 
 		switch(SERVER_STATUS){
 			case(EMPTY):
 				//set player1 to this player
 				player1.setName(playerName);
-				player1.setAI(playerName == "");
+				player1.setAI(ai);
 				SERVER_STATUS = WAITING;
+				*retvalP = xmlrpc_c::value_boolean(true);
 			break;
 			case(WAITING):
-				//set player2 to this player and initialize game
-				player2.setName(playerName);
-				player2.setAI(playerName == "");
-				SERVER_STATUS = FULL;
-				initialize();
+				//if this players name already exists, return false
+				if(player1.getName() == playerName)
+					*retvalP = xmlrpc_c::value_boolean(false);
+				else{
+					//set player2 to this player and initialize game
+					player2.setName(playerName);
+					player2.setAI(ai);
+
+					SERVER_STATUS = FULL;
+					initialize();
+					*retvalP = xmlrpc_c::value_boolean(true);
+				}
+			break;
+			default:
+				*retvalP = xmlrpc_c::value_boolean(false);
 			break;
 		}
-		*retvalP = xmlrpc_c::value_boolean(true);
 	}
 };
 
@@ -428,7 +439,7 @@ public:
 			saveAll();
 		}
 		
-		cout << "current users turn " << (*curPlayer).getName() << endl;
+		cout << "current users turn \"" << (*curPlayer).getName() << "\"" << endl;
 
 		//convert cards/player info/banner into a big ol' array to return
 		vector<xmlrpc_c::value> returnData;
