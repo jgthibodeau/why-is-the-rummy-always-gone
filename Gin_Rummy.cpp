@@ -347,8 +347,8 @@ public:
 										bottomBanner = dontComboMessage+" "+combos[(*selectedSlots[1]).index()].toString();
 									}
 								}
-								else
-									(*curPlayer).addCard(c);
+								//else
+								//	(*curPlayer).addCard(c);
 								resetSelectedSlots();
 							}
 							//if 2nd selected is discard
@@ -448,30 +448,8 @@ public:
 										bottomBanner = dontComboMessage+" "+combos[(*selectedSlots[1]).index()].toString();
 									}
 								}
-								else
-									(*curPlayer).addCard(c);
-								resetSelectedSlots();
-							}
-							//if donekey pressed
-							if(key == submitKey.key()){
-
-								//if combos are good
-								int failedCombo = 0;
-								for(int i=0;i<6;i++){
-									if(!combos[i].isValid()){
-										failedCombo = i+1;
-										break;
-									}
-								}
-								if(failedCombo == 0){
-									(*curPlayer).setScore((*curPlayer).calculateScore());
-									SERVER_STATUS = GAMEOVER;
-								}
-								else{
-									stringstream ss;
-									ss << "Combo " << failedCombo << " is bad!" << endl;
-									bottomBanner = ss.str();
-								}
+								//else
+								//	(*curPlayer).addCard(c);
 								resetSelectedSlots();
 							}
 						}
@@ -480,13 +458,36 @@ public:
 							//reset selected
 							resetSelectedSlots();
 					}
+					//if donekey pressed
+					if(key == submitKey.key()){
+						//if combos are good
+						int failedCombo = 0;
+						for(int i=0;i<6;i++){
+							if(!combos[i].isValid()){
+								failedCombo = i+1;
+								break;
+							}
+						}
+						cout << failedCombo << endl;
+						if(failedCombo == 0){
+							(*curPlayer).setScore((*curPlayer).calculateScore());
+							SERVER_STATUS = GAMEOVER;
+						}
+						else{
+							stringstream ss;
+							ss << "Combo " << failedCombo << " is bad!" << endl;
+							bottomBanner = ss.str();
+						}
+						resetSelectedSlots();
+					}
 					//if cancelKey pressed
 					else if(key == cancelKey.key()){
 						//remove cards from combo
 						for(int i=0;i<6;i++){
-							if(!combos[i].isEmpty())
+							if(!combos[i].isEmpty()){
 								cout << "combo" << i << endl;
-								combos[i].returnCardsToPlayer(*curPlayer);
+								combos[i].returnCardsToPlayer(curPlayer);
+							}
 						}
 					}
 				break;

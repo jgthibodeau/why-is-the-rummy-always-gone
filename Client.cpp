@@ -303,9 +303,9 @@ void gameLoop(){
 			GAME_STATE = LOBBY;
 		}
 		//if game ended, do stuff
-		else if(GAME_STATE == GAMEOVER){
+		else if(xmlrpc_c::value_int(status) == GAMEOVER){
 			xmlrpc_c::value result;
-			client.call(SERVERURL, "server.winnerStatus", "s", &result, playerName.c_str());
+			client.call(SERVERURL, "server.winnerStatus", "", &result);
 			vector<xmlrpc_c::value> v = xmlrpc_c::value_array(result).vectorValueValue();
 			string player1 = xmlrpc_c::value_string(v[0]);
 			int score1 = xmlrpc_c::value_int(v[1]);
@@ -324,11 +324,14 @@ void gameLoop(){
 					//else they get difference as actual score
 					else
 						score1 = diff;
+					score2 = 0;
 				}
 				//if other player has lower score or equal
 				//they get 25 points plus the difference
-				else
+				else{
 					score2 = 25 + diff;
+					score1 = 0;
+				}
 			}
 			else{
 				if(score2 < score1){
@@ -338,11 +341,14 @@ void gameLoop(){
 					//else they get difference as actual score
 					else
 						score2 = diff;
+					score1 = 0;
 				}
 				//if other player has lower score or equal
 				//they get 25 points plus the difference
-				else
+				else{
 					score1 = 25 + diff;
+					score2 = 0;
+				}
 			}
 
 			winner = player1;
@@ -352,6 +358,9 @@ void gameLoop(){
 			stringstream scores;
 			scores << player1 << ": " << score1 << ", " << player2 << ": " << score2 << ", " << winner << "Wins!" << endl;
 			bottomBanner = scores.str();
+
+			xmlrpc_c::value result;
+			client.call(SERVERURL, "server.quit", "", &result);
 		}
 		//it not our turn, poll for info
 		else if(turnPhase == -1){

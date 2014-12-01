@@ -17,7 +17,7 @@ public:
   Card showCard(); 
   bool isValid();
   bool isEmpty();
-  void returnCardsToPlayer(Player player);
+  void returnCardsToPlayer(Player* player);
   bool addCard(Card c); 
   string toString();
   std::deque<Card> comboSet; 

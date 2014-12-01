@@ -20,21 +20,21 @@ bool Combo::isValid(){
 	return (comboSet.size() >= 3 || comboSet.size() == 0);
 } 
 
-void Combo::returnCardsToPlayer(Player p){ 
+void Combo::returnCardsToPlayer(Player* p){ 
 	cout << "starting to return cards" << endl;
 	for(deque<Card>::iterator it = comboSet.begin(); it != comboSet.end();){
 
 		cout << "next iteration" << endl;
-		if ((*it).whoOwns().compare(p.getName()) == 0){ //if card is owned by the person requesting cards back
+		if ((*it).whoOwns().compare((*p).getName()) == 0){ //if card is owned by the person requesting cards back
 
 			cout << "this card is owned" << endl;
 			Card returnedCard; 
 			returnedCard = (*it); //get card from deque
 			cout << "temporarily have it" << endl;
-			comboSet.erase(it); //erase card from deque
-			cout << "erased ok" << endl;
-			p.addCard(returnedCard); //place removed card in players hand
+			(*p).addCard(returnedCard); //place removed card in players hand
 			cout << "gave to player" << endl;
+			it = comboSet.erase(it); //erase card from deque
+			cout << "erased ok" << endl;
 		}
 		else
 			++it;
