@@ -638,10 +638,6 @@ int main(int const argc, const char** const argv){
 	xmlrpc_c::registry myRegistry;
 	xmlrpc_c::methodPtr const respondToInputP(new respondToInput);
 	myRegistry.addMethod("server.respondToInput", respondToInputP);
-	xmlrpc_c::methodPtr const remoteSaveP(new remoteSave);
-	myRegistry.addMethod("server.save", remoteSaveP);
-	xmlrpc_c::methodPtr const remoteLoadP(new remoteLoad);
-	myRegistry.addMethod("server.load", remoteLoadP);
 	xmlrpc_c::methodPtr const addPlayerP(new addPlayer);
 	myRegistry.addMethod("server.addPlayer", addPlayerP);
 	xmlrpc_c::methodPtr const checkPlayerP(new checkPlayer);

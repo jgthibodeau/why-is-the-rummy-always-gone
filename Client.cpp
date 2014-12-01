@@ -356,10 +356,11 @@ void gameLoop(){
 				winner = player2;
 
 			stringstream scores;
-			scores << player1 << ": " << score1 << ", " << player2 << ": " << score2 << ", " << winner << "Wins!" << endl;
+			scores << player1 << ": " << score1 << ", " << player2 << ": " << score2 << ", " << winner << " Wins!" << endl;
 			bottomBanner = scores.str();
 
 			xmlrpc_c::value result3;
+			sleep(1);
 			client.call(SERVERURL, "server.quit", "", &result3);
 		}
 		//it not our turn, poll for info
