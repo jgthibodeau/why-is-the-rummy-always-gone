@@ -484,7 +484,9 @@ public:
 					else if(key == cancelKey.key()){
 						//remove cards from combo
 						for(int i=0;i<6;i++){
-							combos[i].returnCardsToPlayer(*curPlayer);
+							if(!combos[i].isEmpty())
+								cout << "combo" << i << endl;
+								combos[i].returnCardsToPlayer(*curPlayer);
 						}
 					}
 				break;
