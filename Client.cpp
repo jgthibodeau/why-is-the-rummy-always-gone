@@ -124,11 +124,9 @@ int main(int argc, char* argv[])
 	for (;;) {
 		gameLoop();
 		draw();
-		sleep(sleepAmount);
-		sleepAmount=0;
+	// 	sleep(sleepAmount);
+	// 	sleepAmount=0;
 	}
-
-	return 0;
 }
 
 void gameLoop(){
