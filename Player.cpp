@@ -42,7 +42,7 @@ int Player::calculateScore(){
 bool Player::canKnock(){
     bool knock = false;
     int deadwood = calculateScore();
-    if (deadwood < 10){
+    if (deadwood < 1000){
         knock = true;
     }
     return knock;
