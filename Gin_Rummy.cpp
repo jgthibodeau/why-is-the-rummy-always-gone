@@ -92,6 +92,31 @@ void initialize();
 void emptyDatabase();
 void endGame();
 
+class winnerStatus : public xmlrpc_c::method{
+public:
+	winnerStatus(){}
+	void execute(xmlrpc_c::paramList const& paramList, xmlrpc_c::value* const retvalP){
+		//string playerName = paramList.getString(0);
+		paramList.verifyEnd(0);
+
+		vector<xmlrpc_c::value> returnData;
+		returnData.push_back(xmlrpc_c::value_string(player1.getName()));
+		returnData.push_back(xmlrpc_c::value_int(player1.getScore()));
+		returnData.push_back(xmlrpc_c::value_string(player2.getName()));
+		returnData.push_back(xmlrpc_c::value_int(player2.getScore()));
+		//which player knocked first, whoever is not current player
+		if(curPlayer == &player1)
+			returnData.push_back(xmlrpc_c::value_int(2));
+		else
+			returnData.push_back(xmlrpc_c::value_int(1));
+
+		// Make an XML-RPC array out of it
+		xmlrpc_c::value_array ret(returnData);
+
+		*retvalP = xmlrpc_c::value_array(ret);
+	}
+};
+
 //returns the current game status (game going, waiting for p2, no game)
 class gameStatus : public xmlrpc_c::method{
 public:
@@ -345,11 +370,18 @@ public:
 										discardPile.addCard(c);
 										//set current player score and go to next player
 										(*curPlayer).setScore((*curPlayer).calculateScore());
+										int score = (*curPlayer).getScore();
+
 										if(curPlayer == &player1)
 											curPlayer = &player2;
 										else
 											curPlayer = &player1;
-										(*curPlayer).setTurnPhase(Player::not_knocker);
+
+										//if this players score is 0, end the game
+										if(score == 0)
+											SERVER_STATUS = GAMEOVER;
+										else
+											(*curPlayer).setTurnPhase(Player::not_knocker);
 									}
 									else{
 										(*curPlayer).addCard(c);
@@ -421,7 +453,7 @@ public:
 								resetSelectedSlots();
 							}
 							//if donekey pressed
-							if(){
+							if(key == submitKey.key()){
 
 								//if combos are good
 								int failedCombo = 0;
@@ -624,6 +656,8 @@ int main(int const argc, const char** const argv){
 	myRegistry.addMethod("server.quit", quitP);
 	xmlrpc_c::methodPtr const gameStatusP(new gameStatus);
 	myRegistry.addMethod("server.gameStatus", gameStatusP);
+	xmlrpc_c::methodPtr const winnerStatusP(new winnerStatus);
+	myRegistry.addMethod("server.winnerStatus", winnerStatusP);
 
 	xmlrpc_c::serverAbyss welcomeToTheAbyss(
 		myRegistry,
@@ -817,8 +851,6 @@ void loadAll(){
 
 //set us up the gamez
 void initialize(){
-	gameOver = false;
-
 	bottomBanner = "";
 
 	player1.initialize();
