@@ -318,13 +318,13 @@ void gameLoop(){
 			//if knocking player has lower score
 			if(knocker == 1){
 				if(score1 < score2){
+					score2 = 0;
 					//if they had 0, they get additional 25
 					if(score1 == 0)
 						score1 = 25 + diff;
 					//else they get difference as actual score
 					else
 						score1 = diff;
-					score2 = 0;
 				}
 				//if other player has lower score or equal
 				//they get 25 points plus the difference
@@ -335,13 +335,13 @@ void gameLoop(){
 			}
 			else{
 				if(score2 < score1){
+					score1 = 0;
 					//if they had 0, they get additional 25
 					if(score2 == 0)
 						score2 = 25 + diff;
 					//else they get difference as actual score
 					else
 						score2 = diff;
-					score1 = 0;
 				}
 				//if other player has lower score or equal
 				//they get 25 points plus the difference
@@ -359,8 +359,8 @@ void gameLoop(){
 			scores << player1 << ": " << score1 << ", " << player2 << ": " << score2 << ", " << winner << "Wins!" << endl;
 			bottomBanner = scores.str();
 
-			xmlrpc_c::value result;
-			client.call(SERVERURL, "server.quit", "", &result);
+			xmlrpc_c::value result3;
+			client.call(SERVERURL, "server.quit", "", &result3);
 		}
 		//it not our turn, poll for info
 		else if(turnPhase == -1){

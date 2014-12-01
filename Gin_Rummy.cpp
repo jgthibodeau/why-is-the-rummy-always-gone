@@ -126,24 +126,6 @@ public:
 	}
 };
 
-//TODO eventually!
-class remoteSave : public xmlrpc_c::method{
-public:
-	remoteSave(){}
-	void execute(xmlrpc_c::paramList const& paramList, xmlrpc_c::value* const retvalP){
-	}
-};
-
-class remoteLoad : public xmlrpc_c::method{
-public:
-	remoteLoad(){}
-	void execute(xmlrpc_c::paramList const& paramList, xmlrpc_c::value* const retvalP){
-		//take in players name
-
-		//return if players name doesn't match one of the players that was saved
-	}
-};
-
 class addPlayer : public xmlrpc_c::method{
 public:
 	addPlayer(){}
@@ -308,6 +290,7 @@ public:
 									else
 										curPlayer = &player1;
 									(*curPlayer).setTurnPhase(Player::draw);
+									bottomBanner = "";
 								}
 								resetSelectedSlots();
 							}
@@ -501,17 +484,25 @@ public:
 		else if((*curPlayer).isAI()){
 			//cout << "doing ai" << endl;
 			//execute ai code
-			(*curPlayer).addCard(deck.drawCard());
-			Card c = (*curPlayer).removeCard(0);
-			discardPile.addCard(c);
-			//TODO (*curPlayer).doTurn(deck, discardPile, combos);
+			//if human player knocked, just give up
+			if((*curPlayer).getTurnPhase() == Player::not_knocker){
+				(*curPlayer).setScore((*curPlayer).calculateScore());
+				SERVER_STATUS = GAMEOVER;
+			}
+			//otherwise, do normal, boring ai routine
+			else{
+				(*curPlayer).addCard(deck.drawCard());
+				Card c = (*curPlayer).removeCard(0);
+				discardPile.addCard(c);
+				//TODO (*curPlayer).doTurn(deck, discardPile, combos);
 
-			if(curPlayer == &player2)
-				curPlayer = &player1;
-			else
-				curPlayer = &player2;
-			(*curPlayer).setTurnPhase(Player::draw);
-			saveAll();
+				if(curPlayer == &player2)
+					curPlayer = &player1;
+				else
+					curPlayer = &player2;
+				(*curPlayer).setTurnPhase(Player::draw);
+				saveAll();
+			}
 		}
 		
 		//cout << "current users turn \"" << (*curPlayer).getName() << "\"" << endl;
