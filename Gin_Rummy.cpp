@@ -53,6 +53,7 @@ char key;
 static const int FULL = 0;
 static const int WAITING = 1;
 static const int EMPTY = 2;
+static const int GAMEOVER = 3;
 int SERVER_STATUS = EMPTY;
 
 //game vars
@@ -342,11 +343,13 @@ public:
 									if((*curPlayer).canKnock()){
 										//TODO SUCCESSFUL KNOCK
 										discardPile.addCard(c);
-										//go to next player
-										//curPlayer = &player2;
-										//TODO player1.setActivity(false);
-										bottomBanner = "A winner is you!";
-										endGame();
+										//set current player score and go to next player
+										(*curPlayer).setScore((*curPlayer).calculateScore());
+										if(curPlayer == &player1)
+											curPlayer = &player2;
+										else
+											curPlayer = &player1;
+										(*curPlayer).setTurnPhase(Player::not_knocker);
 									}
 									else{
 										(*curPlayer).addCard(c);
@@ -387,18 +390,56 @@ public:
 				 */
 				//if last turn phase
 				case(Player::not_knocker):
-
 					if(selectedSlots[0] != NULL){
+						//if click combo, print combo cards on bottomBanner
+						if((*selectedSlots[0]).type() == CardSlot::combo){
+							bottomBanner = combos[(*selectedSlots[0]).index()].toString();
+							resetSelectedSlots();
+						}
+
 						//if player card is 1st selected selected
-						if((*selectedSlots[0]).type() == CardSlot::player){
+						else if((*selectedSlots[0]).type() == CardSlot::player){
 							(*selectedSlots[0]).setHighlight(true);
 							//if 2nd selected is combo
-							if((*selectedSlots[1]).type() == CardSlot::combo){
-								//TODO try to move this card into this combo
-								//TODO if combo ok
-									//TODO bottomBanner = combos[(*selectedSlots[1]).index()].toString();
-								//TODO else
-									bottomBanner = dontComboMessage;
+							if((selectedSlots[1] != NULL) && ((*selectedSlots[1]).type() == CardSlot::combo)){
+								Card c = (*curPlayer).removeCard((*selectedSlots[0]).index());
+								c.makeOwner((*curPlayer).getName());
+								if(c.isValid()){
+									//try to move this card into this combo
+									//Combo com = combos[(*selectedSlots[1]).index()];
+									bool success = combos[(*selectedSlots[1]).index()].addCard(c);
+									if(success)
+										//if combo ok
+										bottomBanner = combos[(*selectedSlots[1]).index()].toString();
+									else{
+										(*curPlayer).addCard(c);
+										bottomBanner = dontComboMessage+" "+combos[(*selectedSlots[1]).index()].toString();
+									}
+								}
+								else
+									(*curPlayer).addCard(c);
+								resetSelectedSlots();
+							}
+							//if donekey pressed
+							if(){
+
+								//if combos are good
+								int failedCombo = 0;
+								for(int i=0;i<6;i++){
+									if(!combos[i].isValid()){
+										failedCombo = i+1;
+										break;
+									}
+								}
+								if(failedCombo == 0){
+									(*curPlayer).setScore((*curPlayer).calculateScore());
+									SERVER_STATUS = GAMEOVER;
+								}
+								else{
+									stringstream ss;
+									ss << "Combo " << failedCombo << " is bad!" << endl;
+									bottomBanner = ss.str();
+								}
 								resetSelectedSlots();
 							}
 						}
@@ -407,13 +448,12 @@ public:
 							//reset selected
 							resetSelectedSlots();
 					}
-					//if submit key pressed
-					if(key == submitKey.key()){
-						//TODO go to end game
-					}
 					//if cancelKey pressed
-					if(key == cancelKey.key()){
-						//TODO remove cards from any combos to curPlayers cards
+					else if(key == cancelKey.key()){
+						//remove cards from combo
+						for(int i=0;i<6;i++){
+							combos[i].returnCardsToPlayer(*curPlayer);
+						}
 					}
 				break;
 			}
@@ -424,7 +464,7 @@ public:
 		}
 		//do ai code if there is an aiplayer
 		else if((*curPlayer).isAI()){
-			cout << "doing ai" << endl;
+			//cout << "doing ai" << endl;
 			//execute ai code
 			(*curPlayer).addCard(deck.drawCard());
 			Card c = (*curPlayer).removeCard(0);
@@ -439,15 +479,18 @@ public:
 			saveAll();
 		}
 		
-		cout << "current users turn \"" << (*curPlayer).getName() << "\"" << endl;
+		//cout << "current users turn \"" << (*curPlayer).getName() << "\"" << endl;
 
 		//convert cards/player info/banner into a big ol' array to return
 		vector<xmlrpc_c::value> returnData;
-		returnData.push_back(xmlrpc_c::value_string(bottomBanner));
-		if((*curPlayer).getName() == playerName)
+		if((*curPlayer).getName() == playerName){
+			returnData.push_back(xmlrpc_c::value_string(bottomBanner));
 			returnData.push_back(xmlrpc_c::value_int((*curPlayer).getTurnPhase()));
-		else
+		}
+		else{
+			returnData.push_back(xmlrpc_c::value_string(""));
 			returnData.push_back(xmlrpc_c::value_int(-1));
+		}
 		//get the player that called here
 		Player* thisPlayer = &player1;
 		if(player2.getName() == playerName)
@@ -665,7 +708,7 @@ void save(string name, string classType, string data){
 	  fprintf(stderr, "SQL error: %s\n", dErrMsg);
 	  sqlite3_free(dErrMsg);
 	}else{
-	 cout << name << " Records created successfully\n" << endl;
+	 //cout << name << " Records created successfully\n" << endl;
 	}
 
 
@@ -711,7 +754,7 @@ string load(string name){
 	  fprintf(stderr, "SQL error: %s\n", dErrMsg);
 	  sqlite3_free(dErrMsg);
 	}else{
-	  cout << name << " Operation done successfully\n" << endl;
+	  //cout << name << " Operation done successfully\n" << endl;
 	}
 
 	sqlite3_close(db);
@@ -746,7 +789,7 @@ void loadAll(){
 
 	sqlite3_close(db);
 
-	cout << data << endl;
+	//cout << data << endl;
 	//if table exists, load errythang
 	if(atoi(data) > 0){
 		player1.load(load("player1"));
@@ -765,14 +808,17 @@ void loadAll(){
 			curPlayer = &player1;
 		else
 			curPlayer = &player2;
-		cout << "LoadAll done successfully\n" << endl;
+		//cout << "LoadAll done successfully\n" << endl;
 	}
-	else
-		cout << "LoadAll skipped successfully\n" << endl;
+	else{
+		//cout << "LoadAll skipped successfully\n" << endl;
+	}
 }
 
 //set us up the gamez
 void initialize(){
+	gameOver = false;
+
 	bottomBanner = "";
 
 	player1.initialize();

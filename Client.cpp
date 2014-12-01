@@ -57,6 +57,7 @@ int GAME_STATE = OUT_GAME;
 static const int FULL = 0;
 static const int WAITING = 1;
 static const int EMPTY = 2;
+static const int GAMEOVER = 3;
 string playerName="";
 string answer="";
 int turnPhase = -1;
@@ -295,14 +296,18 @@ void gameLoop(){
 			client.call(SERVERURL, "server.quit", "", &result);
 			std::exit(0);
 		}
-		//if game ended
+		//if game empty, go back to lobby
 		xmlrpc_c::value status;
 		client.call(SERVERURL, "server.gameStatus", "s", &status, playerName.c_str());
 		if(xmlrpc_c::value_int(status) == EMPTY){
 			GAME_STATE = LOBBY;
 		}
+		//if game ended, do stuff
+		else if(GAME_STATE == GAMEOVER){
+
+		}
 		//it not our turn, poll for info
-		if(turnPhase == -1){
+		else if(turnPhase == -1){
 			xmlrpc_c::value cards;
 			client.call(SERVERURL, "server.respondToInput", "iis", &cards,' ',-1, playerName.c_str());
 			decipherCards(cards);
@@ -378,13 +383,13 @@ void drawCards(){
 	//draw all cards/slots
 	for(int i=0;i<NUMBERCARDSLOTS;i++){
 		//draw highlight
-		if(cardSlots[i].highlighted())
+		if(cardSlots[i].highlighted() && turnPhase != -1)
 			gameDisplay.drawBox(cardSlots[i].position().x()-1, cardSlots[i].position().y()-1, cardSlots[i].width()+2,cardSlots[i].height()+2,0);
 
 		//draw cards
 		CardSlot slot = cardSlots[i];
 
-		if(slot.suit() > -1 && slot.value() > -1)
+		if(slot.suit() > -1 && slot.value() > -1 && (slot.type() != CardSlot::combo || turnPhase == Player::knock || turnPhase == Player::not_knocker))
 			gameDisplay.displayCard(slot.position().x(),slot.position().y(),slot.suit(),slot.value(),0);
 		else
 			gameDisplay.drawBox(slot.position().x(),slot.position().y(),6,5,0);
