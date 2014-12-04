@@ -83,7 +83,7 @@ CardSlot *selectedSlots[2];				//used for selecting specific cards
 string startMessage = "Gin Rummy - Login (Enter) "+closeKey.toString();
 string nameMessage = "Enter your name: ";
 string serverFullMessage = "Game server is busy, please wait or try again later. "+closeKey.toString();
-string joinMessage = "Waiting for Player 2 - "+joinKey.toString()+" "+closeKey.toString();
+string joinMessage = ""+joinKey.toString()+" "+closeKey.toString();
 string serverWaitingMessage = "Waiting for Player 2 - "+quitKey.toString()+" "+closeKey.toString();
 string serverEmptyMessage = singleKey.toString()+" "+multiKey.toString()+" "+closeKey.toString();
 
