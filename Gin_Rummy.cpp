@@ -583,43 +583,6 @@ static int callback(void *data, int argc, char **argv, char **azColName) {
 
 
 int main(int const argc, const char** const argv){
-
-	//testing datebase saves and loads
-	// Card c1 = Card(1,2,3);
-	// Card c2 = Card(2,2,4);
-	// Combo comb1 = Combo(); 
-	// comb1.addCard(c1); 
-	// comb1.addCard(c2); 
-	// Deck d1 = Deck();  
-	// d1.shuffle(); 
-	// DiscardPile dp1 = DiscardPile();
-	// dp1.addCard(c1);
-	// dp1.addCard(c2); 
-	// Player player = Player("jimbo",10,2,false,false);
-	// player.addCard(c1);
-	// player.addCard(c2); 
-
-	// save(1,"player1","Player",player.save());
-	// save(2,"comb1","Combo",comb1.save()); 
-	// save(3,"d1","Deck",d1.save());
-	// save(4,"dp1","DiscardPile",dp1.save());
-
-	// Player notPlayer = Player();
-	// notPlayer.load(load("player1")); 
-	// cout << notPlayer.save() << endl;
-	
-	// Deck d2 = Deck();  
-	// d2.load(load("d1")); 
-	// cout << d2.save() << endl;
-
-	// Combo comb2 = Combo(); 
-	// comb2.load(load("comb1")); 
-	// cout << comb2.save() << endl;
-
-	// DiscardPile dp2 = DiscardPile();  
-	// dp2.load(load("dp1"));
-	// cout << dp2.save() << endl;
-
 	//initialize cardslots
 	cardSlots[0] = CardSlot(0,0,0,0,CardSlot::deck);		//1 deck
 	cardSlots[1] = CardSlot(0,0,0,0,CardSlot::discard);		//1 discard pile
@@ -651,7 +614,7 @@ int main(int const argc, const char** const argv){
 
 	xmlrpc_c::serverAbyss welcomeToTheAbyss(
 		myRegistry,
-		8080,
+		10503,
 		"/tmp/xmlrpc_log");
 
 	welcomeToTheAbyss.run();

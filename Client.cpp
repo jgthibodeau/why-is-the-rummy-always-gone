@@ -34,7 +34,7 @@
 #include <unistd.h>
 
 //locally hosted server url
-#define SERVERURL "http://localhost:8080/RPC2"
+#define SERVERURL "http://54.172.129.151:10503/RPC2"
 
 using namespace std;
 
