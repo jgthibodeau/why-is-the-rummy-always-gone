@@ -87,10 +87,11 @@ string joinMessage = ""+joinKey.toString()+" "+closeKey.toString();
 string serverWaitingMessage = "Waiting for Player 2 - "+quitKey.toString()+" "+closeKey.toString();
 string serverEmptyMessage = singleKey.toString()+" "+multiKey.toString()+" "+closeKey.toString();
 
-string drawMessage = "Gin Rummy - Click Deck or Discard Pile to Draw - "+quitKey.toString()+" "+closeKey.toString();
-string playMessage = "Gin Rummy - Click a Card then Discard Pile to Discard - "+knockKey.toString()+" - "+quitKey.toString()+" "+closeKey.toString();
-string knockMessage = "Gin Rummy - Click a Card then a Combo Slot to Play it - Click a Card then Discard Pile to Knock - "+cancelKey.toString()+" "+quitKey.toString()+" "+closeKey.toString();
-string notTurnMessage = "Gin Rummy - Opponent's Turn - "+quitKey.toString()+" "+closeKey.toString();
+string drawMessage = "Draw - Click Deck or Discard Pile to Draw - "+quitKey.toString()+" "+closeKey.toString();
+string playMessage = "Play - Click a Card then Discard Pile to Discard - "+knockKey.toString()+" - "+quitKey.toString()+" "+closeKey.toString();
+string knockMessage = "Knock - Click a Card then a Combo Slot to Play it - Click a Card then Discard Pile to Knock - "+cancelKey.toString()+" "+quitKey.toString()+" "+closeKey.toString();
+string notKnockMessage = "Opponent Knocked - Click a Card then a Combo Slot to Play it - "+submitKey.toString()+" "+cancelKey.toString()+" "+quitKey.toString()+" "+closeKey.toString();
+string notTurnMessage = "Opponent's Turn - "+quitKey.toString()+" "+closeKey.toString();
 
 string topBanner,bottomBanner;
 
@@ -384,7 +385,7 @@ void gameLoop(){
 					topBanner = knockMessage;
 				break;
 				case(Player::not_knocker):
-					topBanner = knockMessage;
+					topBanner = notKnockMessage;
 				break;
 			}
 			//if mouseClick, 1 and 4 are clicked and released (removes issues from holding then releasing) or keyboard key
