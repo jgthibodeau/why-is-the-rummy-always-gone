@@ -80,6 +80,7 @@ CardSlot *selectedSlots[2];				//used for selecting specific cards
 string dontComboMessage = "Those cards don't combo!";
 string badDeadwoodMessage = "You have too much remaining deadwood!";
 string bottomBanner;
+string chatMessage;
 
 
 //reset highlights and selected cards
@@ -91,6 +92,27 @@ void loadAll();
 void initialize();
 void emptyDatabase();
 void endGame();
+
+class setChat : public xmlrpc_c::method{
+public:
+	setChat(){}
+	void execute(xmlrpc_c::paramList const& paramList, xmlrpc_c::value* const retvalP){
+		string message = paramList.getString(0);
+		paramList.verifyEnd(1);
+		//chatMessage = chatMessage +"\n"+ message;
+		chatMessage = message;
+		*retvalP = xmlrpc_c::value_boolean(true);
+	}
+};
+
+class getChat : public xmlrpc_c::method{
+public:
+	getChat(){}
+	void execute(xmlrpc_c::paramList const& paramList, xmlrpc_c::value* const retvalP){
+		paramList.verifyEnd(0);
+		*retvalP = xmlrpc_c::value_string(chatMessage);
+	}
+};
 
 class winnerStatus : public xmlrpc_c::method{
 public:
@@ -595,6 +617,7 @@ int main(int const argc, const char** const argv){
 
 	SERVER_STATUS = EMPTY;
 
+
 	//try to load everything if it exists
 	loadAll();
 
@@ -609,8 +632,10 @@ int main(int const argc, const char** const argv){
 	myRegistry.addMethod("server.quit", quitP);
 	xmlrpc_c::methodPtr const gameStatusP(new gameStatus);
 	myRegistry.addMethod("server.gameStatus", gameStatusP);
-	xmlrpc_c::methodPtr const winnerStatusP(new winnerStatus);
-	myRegistry.addMethod("server.winnerStatus", winnerStatusP);
+	xmlrpc_c::methodPtr const getChatP(new getChat);
+	myRegistry.addMethod("server.getChat", getChatP);
+	xmlrpc_c::methodPtr const setChatP(new setChat);
+	myRegistry.addMethod("server.setChat", setChatP);
 
 	xmlrpc_c::serverAbyss welcomeToTheAbyss(
 		myRegistry,
@@ -805,6 +830,7 @@ void loadAll(){
 //set us up the gamez
 void initialize(){
 	bottomBanner = "";
+	chatMessage="";
 
 	player1.initialize();
 	player2.initialize();

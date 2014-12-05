@@ -437,6 +437,26 @@ void display::bannerBottom(string bannerText) {
 	attroff(COLOR_PAIR(6) | A_REVERSE | A_BOLD);
 }
 
+void display::bannerChat(string bannerText) {
+	// change to the banner draw settings
+	attron(COLOR_PAIR(6) | A_REVERSE | A_BOLD);
+	// checks if the banner string size is smaller than the width of the screen
+    if((unsigned)cols > bannerText.size()) {
+		// moves the cursor to the bottom of the screen
+		move(lines-2,0);
+		// prints out the banner text
+		printw("%s", bannerText.c_str());
+		// fill in extra space to the banner text is right adjusted
+        hline(' ',cols - bannerText.size());
+	// if banner string size is larger than width of screen
+	} else {
+		// clip the banner text so it doesn't wrap over to the next line
+		mvprintw(lines-2,0,"%s", (bannerText.substr(0,cols)).c_str());
+	}
+	// turn off the draw colors
+	attroff(COLOR_PAIR(6) | A_REVERSE | A_BOLD);
+}
+
 /*
  * Function: Draws a banner of text at the top left of the screen
  * Description: Inverts the color and draws the banner at the top
@@ -446,17 +466,17 @@ void display::bannerTop(string bannerText) {
 	// change to the banner draw settings
 	attron(COLOR_PAIR(6) | A_REVERSE | A_BOLD);
 	// checks if the banner string size is smaller than the width of the screen
-    if((unsigned)cols > bannerText.size()) {
+    if((unsigned)cols*2 > bannerText.size()) {
 		// moves the cursor to the bottom of the screen
 		move(0,0);
 		// prints out the banner text
 		printw("%s", bannerText.c_str());
 		// fill in extra space after the banner text
-        hline(' ',cols - bannerText.size());
+        hline(' ',cols - bannerText.size()%cols);
 	// if banner string size is larger than width of screen
 	} else {
 		// clip the banner text so it doesn't wrap over to the next line
-		mvprintw(0,0,"%s", (bannerText.substr(0,cols)).c_str());
+		mvprintw(0,0,"%s", (bannerText.substr(0,cols*2)).c_str());
 	}
 	// turn off the draw colors
 	attroff(COLOR_PAIR(6) | A_REVERSE | A_BOLD);

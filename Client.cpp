@@ -34,7 +34,8 @@
 #include <unistd.h>
 
 //locally hosted server url
-#define SERVERURL "http://54.172.129.151:10503/RPC2"
+//#define SERVERURL "http://54.172.129.151:10503/RPC2"
+ #define SERVERURL "http://localhost:10503/RPC2"
 
 using namespace std;
 
@@ -52,6 +53,7 @@ static const int IRWIN = 3;
 static const int STEVE = 4;
 static const int LOBBY = 5;
 static const int PRE_GAME = 6;
+static const int CHAT = 7;
 int GAME_STATE = OUT_GAME;
 //enumberable for server state
 static const int FULL = 0;
@@ -59,6 +61,7 @@ static const int WAITING = 1;
 static const int EMPTY = 2;
 static const int GAMEOVER = 3;
 string playerName="";
+string message="";
 string answer="";
 int turnPhase = -1;
 int sleepAmount;
@@ -71,10 +74,11 @@ Key singleKey('1', "Start 1P Game");
 Key multiKey('2', "Start 2P Game");
 Key joinKey('j', "Join Game");
 Key knockKey('k', "Knock");
-Key submitKey('s', "Submit");
+Key submitKey('\n', "Submit");
 Key cancelKey('c', "Cancel");
 Key quitKey('q', "Quit Game");
 Key closeKey('x', "Save and Exit");
+Key chatKey('t', "Talk");
 //positions to display cards
 const int NUMBERCARDSLOTS = 19;
 CardSlot cardSlots[NUMBERCARDSLOTS];	//1 deck, 1 discard pile, 6 combo piles, 10 player cards
@@ -86,12 +90,13 @@ string serverFullMessage = "Game server is busy, please wait or try again later.
 string joinMessage = ""+joinKey.toString()+" "+closeKey.toString();
 string serverWaitingMessage = "Waiting for Player 2 - "+quitKey.toString()+" "+closeKey.toString();
 string serverEmptyMessage = singleKey.toString()+" "+multiKey.toString()+" "+closeKey.toString();
+string chatMessage = "Send Message (Enter) Cancel (Esc)";
 
-string drawMessage = "Draw - Click Deck or Discard Pile to Draw - "+quitKey.toString()+" "+closeKey.toString();
-string playMessage = "Play - Click a Card then Discard Pile to Discard - "+knockKey.toString()+" - "+quitKey.toString()+" "+closeKey.toString();
-string knockMessage = "Knock - Click a Card then a Combo Slot to Play it - Click a Card then Discard Pile to Knock - "+cancelKey.toString()+" "+quitKey.toString()+" "+closeKey.toString();
-string notKnockMessage = "Opponent Knocked - Click a Card then a Combo Slot to Play it - "+submitKey.toString()+" "+cancelKey.toString()+" "+quitKey.toString()+" "+closeKey.toString();
-string notTurnMessage = "Opponent's Turn - "+quitKey.toString()+" "+closeKey.toString();
+string drawMessage = "Draw - Click Deck or Discard Pile to Draw - "+chatKey.toString()+" "+quitKey.toString()+" "+closeKey.toString();
+string playMessage = "Play - Click a Card then Discard Pile to Discard - "+knockKey.toString()+" "+chatKey.toString()+" "+quitKey.toString()+" "+closeKey.toString();
+string knockMessage = "Knock - Click a Card then a Combo Slot to Play it - Click a Card then Discard Pile to Knock - "+chatKey.toString()+" "+cancelKey.toString()+" "+quitKey.toString()+" "+closeKey.toString();
+string notKnockMessage = "Opponent Knocked - Click a Card then a Combo Slot to Play it - "+submitKey.toString()+" "+chatKey.toString()+" "+cancelKey.toString()+" "+quitKey.toString()+" "+closeKey.toString();
+string notTurnMessage = "Opponent's Turn - "+chatKey.toString()+" "+quitKey.toString()+" "+closeKey.toString();
 
 string topBanner,bottomBanner;
 
@@ -136,7 +141,7 @@ void gameLoop(){
 	char key = gameDisplay.captureInput();
 
 	//if closeKey pressed, exit the client
-	if(key == closeKey.key())
+	if(key == closeKey.key() && GAME_STATE != CHAT && GAME_STATE != LOGIN)
 		std::exit(0);
 
 	//regular game
@@ -288,8 +293,49 @@ void gameLoop(){
 		//TODO
 		//wait here when starting 2P game until second player has been added
 	}
+	case CHAT:
+	{
+		topBanner = chatMessage;
+
+		//prompt for name
+		bottomBanner = "Chat: "+message;
+
+		//if delete key pressed
+		if((key == 7 || key == 74) && message.size() > 0)
+			message.erase (message.end() - 1);
+
+		else if(key == '\n' && message != ""){
+			message = playerName+": "+message;
+			xmlrpc_c::value result;
+			client.call(SERVERURL, "server.setChat", "s", &result, message.c_str());
+			GAME_STATE = IN_GAME;
+			bottomBanner = "";
+			break;
+		}
+		else if(key == 27){
+			GAME_STATE = IN_GAME;
+			bottomBanner = "";
+			break;
+		}
+		
+		//use key as next name letter
+		else if(isalnum(key) || ispunct(key) || key==' ')//key > 31 && key < 127)
+			message = message + key;
+		break;
+	}
 	case IN_GAME:
 	{
+		//if chat key pressed, do chat stuff
+		if(key == chatKey.key()){
+			message = "";
+			GAME_STATE = CHAT;
+			break;
+		}
+
+		xmlrpc_c::value currentMessage;
+		client.call(SERVERURL, "server.getChat", "", &currentMessage);
+		message = xmlrpc_c::value_string(currentMessage);
+
 
 		//if quitKey pressed, exit client and tell server to kill the game
 		if(key == quitKey.key()){
@@ -467,6 +513,13 @@ void drawBanners(){
 		messageString << bottomBanner;
 		gameDisplay.bannerBottom(messageString.str());
 	}
+
+	if(message != "" && GAME_STATE != CHAT){
+		messageString.str("");
+		messageString << message;
+		gameDisplay.bannerChat(messageString.str());
+	}
+
 }
 
 int findCardSlot(int x, int y){
